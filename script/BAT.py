@@ -21,21 +21,20 @@ APPLICATION_NAME = "BAT"
 VERSION_NUMBER = 0.8
 
 START_MODE = "Start1"
-USER_NAME = "ばっと"
 
 WINDOW_SIZE = [1280, 720]
 
 # Path
-BASE_ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__)) + "/../"
-DATA_DIR = BASE_ABSOLUTE_PATH + "data/"
-
+# BASE_ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__)) + "/../"
+DATA_DIR = "../data/"
 # LOG_BASE_DIR = BASE_ABSOLUTE_PATH + "log/"
 LOG_BASE_DIR = "./log/"
 
-import script.item as itm
-import script.record as rec
-import script.analize as anal
-import script.excel as xl
+
+import item as itm
+import record as rec
+import analize as anal
+import excel as xl
 
 
 class TitleScene(QGraphicsScene):
@@ -459,10 +458,6 @@ class MainWindow(QMainWindow):
 
         self.scene = TitleScene()
 
-        datatime = datetime.now().strftime("%Y%m%d_%H%M%S") # .strftime("%Y/%m/%d %H:%M:%S")
-        self.logDir = LOG_BASE_DIR + "%s_%s" % (USER_NAME, datatime)
-        os.makedirs(self.logDir)
-
         # QGraphicsView
         self.graphicView = QGraphicsView()
         self.graphicView.setCacheMode(QGraphicsView.CacheBackground)
@@ -475,6 +470,12 @@ class MainWindow(QMainWindow):
         self.timer.setInterval(1000 / 60)
 
         self.timer.start()
+
+    def initLogDir(self, userName):
+
+        datatime = datetime.now().strftime("%Y%m%d_%H%M%S") # .strftime("%Y/%m/%d %H:%M:%S")
+        self.logDir = LOG_BASE_DIR + "%s_%s" % (userName, datatime)
+        os.makedirs(self.logDir)
 
     def sceneManager(self):
 
@@ -503,11 +504,54 @@ class MainWindow(QMainWindow):
 
         super(MainWindow, self).keyPressEvent(event)
 
+    def callInputDialog(self):
 
-if __name__ == '__main__':
+        # self.hide()
+        self.inputDlg = InputDialog(self)
+        self.inputDlg.show()
+
+
+class InputDialog(QDialog):
+
+    def __init__(self, parent):
+        super(InputDialog, self).__init__(parent)
+
+        # ensure this window gets garbage-collected when closed
+        self.setAttribute(Qt.WA_DeleteOnClose)
+
+        self.initUI()
+
+    def initUI(self):
+
+        self.okButton = QPushButton('OK', self)
+        self.okButton.move(20, 20)
+        self.okButton.clicked.connect(self.closeAndReturn)
+
+        self.lineEdit = QLineEdit(self)
+        self.lineEdit.move(130, 22)
+
+        self.setGeometry(300, 300, 290, 150)
+        self.setWindowTitle('Initial Setting')
+
+    def closeAndReturn(self):
+
+        self.accept()
+        self.parent().show()
+
+        userName = self.lineEdit.text()
+        self.parent().initLogDir(userName)
+
+    def closeEvent(self, event):
+
+        self.reject()
+        self.parent().close()
+
+
+if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
+    # mainWindow.show()
 
-    mainWindow.show()
+    mainWindow.callInputDialog()
     sys.exit(app.exec_())
