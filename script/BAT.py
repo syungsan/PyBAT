@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# Windows Build Command
+# .\venv\python -m PyInstaller .\script\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
+
 import sys
 import os
 
@@ -24,20 +27,15 @@ WINDOW_SIZE = [1280, 720]
 
 # Path
 BASE_ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__)) + "/../"
-LOG_BASE_DIR = BASE_ABSOLUTE_PATH + "log/"
 DATA_DIR = BASE_ABSOLUTE_PATH + "data/"
 
-# scriptフォルダをパスに追加
-sd = os.path.dirname(__file__)
-sys.path.append(sd)
+# LOG_BASE_DIR = BASE_ABSOLUTE_PATH + "log/"
+LOG_BASE_DIR = "./log/"
 
-# Path
-BASE_ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__)) + "/../"
-
-import item as itm
-import record as rec
-import analize as anal
-import excel as xl
+import script.item as itm
+import script.record as rec
+import script.analize as anal
+import script.excel as xl
 
 
 class TitleScene(QGraphicsScene):

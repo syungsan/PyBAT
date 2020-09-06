@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./script/main.py']
+APP = ['./script/BAT.py']
 APP_NAME = "BAT"
 DATA_FILES = []
 OPTIONS = {
