@@ -33,4 +33,5 @@ setup(
 )
 
 # Build Command
+# rm -rf dist/ build/
 # python setup.py py2app --packages=PIL
