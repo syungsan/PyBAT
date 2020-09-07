@@ -12,7 +12,7 @@ APP_NAME = "BAT"
 DATA_FILES = []
 OPTIONS = {
     'argv_emulation': False,
-    'iconfile': '/Users/syungsan/Documents/IDEAProjects/PyBAT/data/Thesquid.ink-Free-Flat-Sample-Support.icns',
+    'iconfile': '/Users/syungsan/Documents/PyBAT/data/Thesquid.ink-Free-Flat-Sample-Support.icns',
     'strip': True,
     'plist': {
         'CFBundleName': APP_NAME,
@@ -34,4 +34,4 @@ setup(
 
 # Build Command
 # rm -rf dist/ build/
-# python setup.py py2app --packages=PIL
+# ./venv/bin/python setup.py py2app --packages=PIL
