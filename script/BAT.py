@@ -22,6 +22,7 @@ VERSION_NUMBER = 0.8
 
 START_MODE = "Start1"
 
+INPUT_DIALOG_SIZE = [320, 240]
 WINDOW_SIZE = [1280, 720]
 
 # Path
@@ -31,10 +32,10 @@ DATA_DIR = "../data/"
 LOG_BASE_DIR = "./log/"
 
 
-import item as itm
-import record as rec
-import analize as anal
-import excel as xl
+import script.item as itm
+import script.record as rec
+import script.analize as anal
+import script.excel as xl
 
 
 class TitleScene(QGraphicsScene):
@@ -443,6 +444,7 @@ class MainWindow(QMainWindow):
         # ウインドウサイズを設定
         self.resize(WINDOW_SIZE[0], WINDOW_SIZE[1])
 
+        # デスクトップのスクリーンサイズ取得
         desktop = qApp.desktop()
         geometry = desktop.screenGeometry()
 
@@ -519,6 +521,16 @@ class InputDialog(QDialog):
         # ensure this window gets garbage-collected when closed
         self.setAttribute(Qt.WA_DeleteOnClose)
 
+        self.resize(INPUT_DIALOG_SIZE[0], INPUT_DIALOG_SIZE[1])
+
+        desktop = qApp.desktop()
+        geometry = desktop.screenGeometry()
+
+        framesize = self.frameSize()
+
+        self.setGeometry(0, 0, framesize.width(), framesize.height())
+        self.move((geometry.width() - framesize.width()) * 0.5, (geometry.height() - framesize.height()) * 0.5)
+
         self.initUI()
 
     def initUI(self):
@@ -530,7 +542,7 @@ class InputDialog(QDialog):
         self.lineEdit = QLineEdit(self)
         self.lineEdit.move(130, 22)
 
-        self.setGeometry(300, 300, 290, 150)
+        # self.setGeometry(300, 300, 290, 150)
         self.setWindowTitle('Initial Setting')
 
     def closeAndReturn(self):
