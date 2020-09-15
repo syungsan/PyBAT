@@ -166,5 +166,5 @@ if __name__ == "__main__":
     run("../temp/sample.wav", "../temp/fig.png")
 
 """
-python analize.py
+python mfcc.py
 """

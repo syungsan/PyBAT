@@ -18,7 +18,7 @@ import shutil
 
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = 0.8
+VERSION_NUMBER = "0.8.1"
 
 START_MODE = "Start1"
 
@@ -27,14 +27,10 @@ WINDOW_SIZE = [1280, 720]
 
 # Path
 # BASE_ABSOLUTE_PATH = os.path.dirname(os.path.realpath(__file__)) + "/../"
-DATA_DIR = "../data/"
-# LOG_BASE_DIR = BASE_ABSOLUTE_PATH + "log/"
-LOG_BASE_DIR = "./log/"
-
 
 import script.item as itm
 import script.record as rec
-import script.analize as anal
+import script.mfcc as mfcc
 import script.excel as xl
 
 
@@ -383,7 +379,7 @@ class ResultScene(QGraphicsScene):
         self.analize()
 
         self.distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "%sresult_template.xlsx" % DATA_DIR
+        dataPath = "../data/result_template.xlsx"
 
         if not os.path.isfile(self.distinationPath):
             shutil.copy(dataPath, self.distinationPath)
@@ -408,7 +404,7 @@ class ResultScene(QGraphicsScene):
                 if not os.path.isdir(figDir):
                     os.mkdir(figDir)
 
-                startTime, endTime, interval = anal.run(wavPath, "%s/%s.png" % (figDir, baseName))
+                startTime, endTime, interval = mfcc.run(wavPath, "%s/%s.png" % (figDir, baseName))
 
                 datas = [startTime, endTime, interval]
 
@@ -473,10 +469,10 @@ class MainWindow(QMainWindow):
 
         self.timer.start()
 
-    def initLogDir(self, userName):
+    def initLogDir(self, userName, dirName):
 
         datatime = datetime.now().strftime("%Y%m%d_%H%M%S") # .strftime("%Y/%m/%d %H:%M:%S")
-        self.logDir = LOG_BASE_DIR + "%s_%s" % (userName, datatime)
+        self.logDir = "%s/%s_%s" % (dirName, userName, datatime)
         os.makedirs(self.logDir)
 
     def sceneManager(self):
@@ -535,23 +531,45 @@ class InputDialog(QDialog):
 
     def initUI(self):
 
-        self.okButton = QPushButton('OK', self)
+        self.okButton = QPushButton("OK", self)
         self.okButton.move(20, 20)
         self.okButton.clicked.connect(self.closeAndReturn)
 
-        self.lineEdit = QLineEdit(self)
-        self.lineEdit.move(130, 22)
+        self.nameLineEdit = QLineEdit(self)
+        self.nameLineEdit.move(130, 22)
+
+        self.selectDirButton = QPushButton('...', self)
+        self.selectDirButton.move(240, 50)
+        self.selectDirButton.clicked.connect(self.selectDir)
+
+        self.dirLineEdit = QLineEdit(self)
+        self.dirLineEdit.setGeometry(0, 0, 200, self.dirLineEdit.height())
+
+        self.dirLineEdit.move(20, 50)
+
+        self.firstDirName = os.path.expanduser("~") + "/Documents"
+
+        self.dirLineEdit.setText(self.firstDirName)
 
         # self.setGeometry(300, 300, 290, 150)
-        self.setWindowTitle('Initial Setting')
+        self.setWindowTitle('Name Input')
+
+    def selectDir(self):
+
+        selectDirName = QFileDialog.getExistingDirectory(self, "Select Directory", self.firstDirName)
+
+        if selectDirName != "":
+            self.dirLineEdit.setText(selectDirName)
 
     def closeAndReturn(self):
 
         self.accept()
         self.parent().show()
 
-        userName = self.lineEdit.text()
-        self.parent().initLogDir(userName)
+        userName = self.nameLineEdit.text()
+        dirName = self.dirLineEdit.text()
+
+        self.parent().initLogDir(userName, dirName)
 
     def closeEvent(self, event):
 
