@@ -28,7 +28,7 @@ class TextGraphicsSimpleTextItem(QGraphicsSimpleTextItem):
 
 class BoxGraphicsItem(QGraphicsItem):
 
-    def __init__(self, rect, color, parent=None):
+    def __init__(self, color, rect=QRectF(0, 0, 10, 10), parent=None):
         super().__init__(parent)
 
         self.rect = rect
@@ -41,18 +41,76 @@ class BoxGraphicsItem(QGraphicsItem):
         painter.setPen(QPen(self.color, 1.0))
         painter.setBrush(self.color)
 
-        painter.drawRect(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
+        painter.drawRect(self.boundingRect())
 
     def boundingRect(self):
-        return QRectF(self.rect[0], self.rect[1], self.rect[2], self.rect[3])
+        return self.rect
+
+
+class CrossGraphicsItem(QGraphicsItem):
+
+    def __init__(self, color, size=120, lineWidth=40, parent=None):
+        super().__init__(parent)
+
+        self.color = color
+        self.size = size
+        self.lineWidth = lineWidth
+
+    def paint(self, painter, option, widget):
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # ペンとブラシを設定する。
+        painter.setPen(QPen(self.color, 1.0))
+        painter.setBrush(self.color)
+
+        # ポリゴンを描画する。
+        poly = self.createShape()
+        painter.drawPolygon(poly)
+
+    def createShape(self):
+
+        s = self.size
+        l = self.lineWidth
+        p = (s - l) * 0.5
+        q = p + l
+
+        # QPolygonF に格納する。
+        polygon = QPolygonF([
+            QPointF(p, 0),     # 1
+            QPointF(q, 0),    # 2
+            QPointF(q, p),   # 3
+            QPointF(s, p),   # 4
+            QPointF(s, q),  # 5
+            QPointF(q, q),  # 6
+            QPointF(q, s),  # 7
+            QPointF(p, s),   # 8
+            QPointF(p, q),   # 9
+            QPointF(0, q),    # 10
+            QPointF(0, p),     # 11
+            QPointF(p, p)     # 12
+        ])
+
+        return polygon
+
+    def boundingRect(self):
+
+        '''この図形を囲む矩形を返す。
+        '''
+        return QRectF(0, 0, self.size, self.size)
+
+    def width(self):
+        return self.boundingRect().width()
+
+    def height(self):
+        return self.boundingRect().height()
 
 
 class EllipseGraphicsItem(QGraphicsItem):
 
-    edgeList = []
-
     def __init__(self, radius, color, parent=None):
         super().__init__(parent)
+
+        self.edgeList = []
 
         self.radius = radius
         self.color = color
@@ -81,59 +139,11 @@ class EllipseGraphicsItem(QGraphicsItem):
     def edges(self):
         return self.edgeList
 
-
-class CrossGraphicsItem(QGraphicsItem): # サイズを可変にする
-
-    def __init__(self, size, lineWidth, color, parent=None):
-        super().__init__(parent)
-
-        self.size = size
-        self.lineWidth = lineWidth
-        self.color = color
-        # まだ製作途中でポリゴンのサイズを動的に変更できるようにする
-
-    def paint(self, painter, option, widget):
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        # ペンとブラシを設定する。
-        painter.setPen(QPen(self.color, 1.0))
-        painter.setBrush(self.color)
-
-        # ポリゴンを描画する。
-        poly = self.createShape()
-        painter.drawPolygon(poly)
-
-    def createShape(self):
-
-        # QPolygonF に格納する。
-        polygon = QPolygonF([
-            QPointF(40, 0),     # 1
-            QPointF(80, 0),    # 2
-            QPointF(80, 40),   # 3
-            QPointF(120, 40),   # 4
-            QPointF(120, 80),  # 5
-            QPointF(80, 80),  # 6
-            QPointF(80, 120),  # 7
-            QPointF(40, 120),   # 8
-            QPointF(40, 80),   # 9
-            QPointF(0, 80),    # 10
-            QPointF(0, 40),     # 11
-            QPointF(40, 40)     # 12
-        ])
-
-        return polygon
-
-    def boundingRect(self):
-
-        '''この図形を囲む矩形を返す。
-        '''
-        return QRectF(0, 0, 120, 120)
-
     def width(self):
-        return 120
+        return self.boundingRect().width()
 
     def height(self):
-        return 120
+        return self.boundingRect().height()
 
 
 class StarGraphicsItem(QGraphicsItem):
@@ -164,8 +174,8 @@ class StarGraphicsItem(QGraphicsItem):
         num_points = 11
         r = self.radius * np.where(np.arange(num_points) % 2.0 == 0.0, 0.5, 1.0)  # 半径
         theta = np.linspace(0.0, 2.0 * np.pi, num_points)  # 角度
-        xs = self.center[0] + r * np.sin(theta)  # x 座標
-        ys = self.center[1] + r * np.cos(theta)  # y 座標
+        xs = self.center.x() + r * np.sin(theta)  # x 座標
+        ys = self.center.y() + r * np.cos(theta)  # y 座標
 
         # QPolygonF に格納する。
         polygon = QPolygonF()
@@ -177,9 +187,13 @@ class StarGraphicsItem(QGraphicsItem):
 
         '''この図形を囲む矩形を返す。
         '''
-        return QRectF(self.center[0] - self.radius,
-                      self.center[1] - self.radius,
-                      self.radius * 2.0, self.radius * 2.0)
+        return QRectF(self.center.x() - self.radius, self.center.y() - self.radius, self.radius * 2.0, self.radius * 2.0)
+
+    def width(self):
+        return self.boundingRect().width()
+
+    def height(self):
+        return self.boundingRect().height()
 
 
 class MainWindow(QMainWindow):
