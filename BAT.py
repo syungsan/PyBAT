@@ -9,7 +9,7 @@
 
 # Windows
 # del /s dist build
-# .\venv\python -m PyInstaller .\script\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
+# .\venv\python -m PyInstaller .\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
 
 import sys
 import os
@@ -23,10 +23,10 @@ import threading
 import glob
 import shutil
 
-import script.item as item
-import script.record as record
-import script.mfcc as mfcc
-import script.excel as excel
+import item
+import record
+import mfcc
+import excel
 
 
 APPLICATION_NAME = "BAT"
@@ -68,6 +68,11 @@ ELLIPSE_SIZE_RATIO = 1.7
 STAR_SIZE_RATIO = 2.0
 
 PROGRESS_LIMIT = 100
+
+if os.name == "nt":
+    DEFAULT_FONT_NAME = "Meiryo"
+else:
+    DEFAULT_FONT_NAME = "Hiragino Sans"
 
 
 class TitleScene(QGraphicsScene):
@@ -145,19 +150,19 @@ class TitleScene(QGraphicsScene):
         else:
             unitRatio = self.width() * (1 / 16)
 
-        self.titleLabel.setFont(QFont("Kaushan Script", int(unitRatio * 1.0)))
+        self.titleLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 1.0)))
         self.titleLabel.setPos((self.width() - self.titleLabel.boundingRect().width()) * 0.5, (self.height() - self.titleLabel.boundingRect().height()) * 0.1)
 
-        self.versionNumberLabel.setFont(QFont("JiyunoTsubasaFont", int(unitRatio * 0.2)))
+        self.versionNumberLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.versionNumberLabel.setPos(self.titleLabel.x() + self.titleLabel.boundingRect().width() - self.versionNumberLabel.boundingRect().width(), self.titleLabel.y() + self.titleLabel.boundingRect().height())
 
-        self.analyzeMethodLabel.setFont(QFont("IPAPGothic", int(unitRatio * 0.2)))
+        self.analyzeMethodLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.45)
 
         for index, analyzeMethodRadioButton in enumerate(self.analyzeMethodRadioButtons):
 
             analyzeMethodRadioButtonFontSize = int(unitRatio * 0.2)
-            analyzeMethodRadioButton.setFont(QFont("IPAPGothic", analyzeMethodRadioButtonFontSize))
+            analyzeMethodRadioButton.setFont(QFont(DEFAULT_FONT_NAME, analyzeMethodRadioButtonFontSize))
 
             analyzeMethodRadioButtonWidth = analyzeMethodRadioButtonFontSize * 5
             analyzeMethodRadioButtonHeight = analyzeMethodRadioButtonFontSize
@@ -171,7 +176,7 @@ class TitleScene(QGraphicsScene):
         for index, testButton in enumerate(self.testButtons):
 
             testButtonFontSize = int(unitRatio * 0.2)
-            testButton.setFont(QFont("IPAPGothic", testButtonFontSize))
+            testButton.setFont(QFont(DEFAULT_FONT_NAME, testButtonFontSize))
 
             testButtonWidth = len(KIND_OF_TEST_STRINGS[index]) * testButtonFontSize
             testButtonHeight = testButtonFontSize * 2
@@ -182,10 +187,10 @@ class TitleScene(QGraphicsScene):
 
             testButton.move(int(self.width() * 0.15 + (self.width() * 0.7 - testButton.width()) * 0.25 * (index + 1)), int((self.height() - testButton.height()) * 0.7))
 
-        self.toolInfoLabel.setFont(QFont("IPAPGothic", int(unitRatio * 0.2)))
+        self.toolInfoLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.toolInfoLabel.setPos((self.width() - self.toolInfoLabel.boundingRect().width()) * 0.5, (self.height() - self.toolInfoLabel.boundingRect().height()) * 0.85)
 
-        self.copyrightLabel.setFont(QFont("IPAPGothic", int(unitRatio * 0.2)))
+        self.copyrightLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.copyrightLabel.setPos((self.width() - self.copyrightLabel.boundingRect().width()) * 0.5, (self.height() - self.copyrightLabel.boundingRect().height()) * 0.9)
 
     def onClickedAnalyzeingMethodRadioButton(self):
@@ -274,7 +279,7 @@ class TestScene(QGraphicsScene):
         for i in range(len(WORDS)):
             for j in range(len(WORDS[i])):
 
-                wordItem = item.TextGraphicsSimpleTextItem(text=WORDS[i][j], size=wordFontSize, fontType="IPAPGothic")
+                wordItem = item.TextGraphicsSimpleTextItem(text=WORDS[i][j], size=wordFontSize, fontType=DEFAULT_FONT_NAME)
                 self.addItem(wordItem)
 
                 x_one_length = (self.baseLayer.rect.width() - (x_padding_margin * 2.0)) / len(WORDS[i])
@@ -332,7 +337,7 @@ class TestScene(QGraphicsScene):
         for i in range(len(WORDS)):
             for j in range(len(WORDS[i])):
 
-                self.wordItems[k].setFont(QFont("IPAPGothic", int(wordFontSize)))
+                self.wordItems[k].setFont(QFont(DEFAULT_FONT_NAME, int(wordFontSize)))
 
                 x_one_length = (self.baseLayer.rect.width() - (x_padding_margin * 2.0)) / len(WORDS[i])
                 y_one_length = (self.baseLayer.rect.height() - (y_padding_margin * 2.0)) / len(WORDS)
@@ -548,7 +553,7 @@ class ResultScene(QGraphicsScene):
         else:
             unitRatio = self.width() * (1 / 16)
 
-        self.titleLabel.setFont(QFont("Kaushan Script", int(unitRatio * 0.7)))
+        self.titleLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.7)))
         self.titleLabel.setPos((self.width() - self.titleLabel.boundingRect().width()) * 0.5, (self.height() - self.titleLabel.boundingRect().height()) * 0.2)
 
 
@@ -572,7 +577,7 @@ class Analyze(QThread):
         test3Datas = []
 
         distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "../data/result_template.xlsx"
+        dataPath = "./data/result_template.xlsx"
 
         if not os.path.isfile(distinationPath):
             shutil.copy(dataPath, distinationPath)
@@ -630,17 +635,6 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        # Load the font:
-        font_db = QFontDatabase()
-
-        font_db.addApplicationFont("../data/JiyunoTsubasa.ttf")
-        font_db.addApplicationFont("../data/ipagp.ttf")
-        font_db.addApplicationFont("../data/KaushanScript-Regular.otf")
-
-        # font_id = font_db.addApplicationFont("../data/KaushanScript-Regular.otf")
-        # families = font_db.applicationFontFamilies(font_id)
-        # print(families)
 
         self.dirName = ""
         self.userName = ""

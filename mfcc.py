@@ -159,11 +159,11 @@ if __name__ == "__main__":
 
     import record as rec
 
-    if not os.path.isdir("../temp"):
-        os.mkdir("../temp")
+    if not os.path.isdir("./temp"):
+        os.mkdir("./temp")
 
-    rec.recording("../temp/sample.wav", 5.0)
-    run("../temp/sample.wav", "../temp/fig.png")
+    rec.recording("./temp/sample.wav", 5.0)
+    run("./temp/sample.wav", "./temp/fig.png")
 
 """
 python mfcc.py

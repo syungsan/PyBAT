@@ -57,7 +57,7 @@ if __name__ == "__main__":
     sd = os.path.dirname(__file__)
     sys.path.append(sd)
 
-    if not os.path.isdir("../temp"):
-        os.mkdir("../temp")
+    if not os.path.isdir("./temp"):
+        os.mkdir("./temp")
 
-    recording("../temp/record.wav", 5.0)
+    recording("./temp/record.wav", 5.0)
