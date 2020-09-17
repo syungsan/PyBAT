@@ -49,10 +49,10 @@ def getMoraFlactuation(mfccPower, deltaPower, filterWidth=4):
     return y, minPeek, maxPeek
 
 
-def run(fileName, figName):
+def run(fileName, figName, vadThreshold):
 
     # defines
-    vadThreshold = 2 # 3
+    # vadThreshold = 2 # 3
 
     # MFCC取得
     mfcc = getMfcc(fileName)
@@ -150,20 +150,15 @@ def run(fileName, figName):
 
 if __name__ == "__main__":
 
-    import os
     import sys
 
-    # scriptフォルダをパスに追加
-    sd = os.path.dirname(__file__)
-    sys.path.append(sd)
+    fileName = sys.argv[1]
+    figName = sys.argv[2]
+    vadThreshold = sys.argv[3]
 
-    import record as rec
+    startTime, endTime, interval = run(fileName=fileName, figName=figName, vadThreshold=vadThreshold)
 
-    if not os.path.isdir("./temp"):
-        os.mkdir("./temp")
-
-    rec.recording("./temp/sample.wav", 5.0)
-    run("./temp/sample.wav", "./temp/fig.png")
+    print("%f,%f,%f" % (startTime, endTime, interval))
 
 """
 python mfcc.py

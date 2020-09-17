@@ -30,6 +30,14 @@ def over_write_list_2d(filePath, sheetName, l_2d, start_row, start_col):
 
     wb.save(filePath)
 
+def over_write_one_value(filePath, sheetName, value, cell):
+
+    wb = openpyxl.load_workbook(filePath)
+    sheet = wb[sheetName]
+    sheet[cell] = value
+
+    wb.save(filePath)
+
 
 if __name__ == '__main__':
 
