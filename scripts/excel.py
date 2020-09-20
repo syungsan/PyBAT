@@ -44,7 +44,7 @@ if __name__ == '__main__':
     import pprint
     import shutil
 
-    shutil.copy("./data/result_template.xlsx", "./temp/result_test.xlsx")
+    shutil.copy("../data/result_template.xlsx", "./temp/result_test.xlsx")
 
     test1_l_2d = get_list_2d("./temp/result_test.xlsx", "VAD解析結果", 3, 34, 1, 4)
     test2_l_2d = get_list_2d("./temp/result_test.xlsx", "VAD解析結果", 3, 34, 6, 9)

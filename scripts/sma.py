@@ -28,23 +28,27 @@ def simpleMovingAverage(data, window=100):
     smas = np.convolve(data, unit, mode="same") # 移動平均
     return smas
 
-def run(fileName, figName, vadThreshold):
+def run(fileName, figName, window, vadThreshold, minNoiseLevel):
 
-    rawWAV, frameRate = ReadWavFile(fileName)
+    rawWAV, frameRate = ReadWavFile(fileName=fileName)
     rawWAV = abs(rawWAV)
 
-    smas = simpleMovingAverage(rawWAV)
+    smas = simpleMovingAverage(data=rawWAV, window=window)
     threshold = max(smas) * vadThreshold
 
-    for index, sma in enumerate(smas):
-        if sma >= threshold:
-            startFrame = index
-            break
+    if threshold < minNoiseLevel:
+        startFrame = 0.0
+        endFrame = 0.0
+    else:
+        for index, sma in enumerate(smas):
+            if sma >= threshold:
+                startFrame = index
+                break
 
-    for index, sma in enumerate(reversed(smas)):
-        if sma >= threshold:
-            endFrame = len(smas) - index
-            break
+        for index, sma in enumerate(reversed(smas)):
+            if sma >= threshold:
+                endFrame = len(smas) - index
+                break
 
     startTime = startFrame / frameRate
     endTime = endFrame / frameRate
@@ -52,7 +56,7 @@ def run(fileName, figName, vadThreshold):
 
     times = np.linspace(0, len(rawWAV) / frameRate, num=len(rawWAV))
 
-    plt.figure(figsize=(15, 10))
+    plt.figure(figsize=(12, 10))
 
     plt.plot(times, rawWAV, label="Raw WAV")
     plt.plot(times, smas, "r", label="SMA")
