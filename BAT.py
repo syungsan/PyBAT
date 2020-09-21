@@ -665,7 +665,13 @@ class Analyze(QThread):
         progressCount = PROGRESS_LIMIT
         self.countChanged.emit(progressCount)
 
+        self.parent().titleLabel.setText("Thank you !!")
+
+        import time
+        time.sleep(3)
+
         self.parent().parent().sceneManager(mode="Title")
+        self.parent().titleLabel.setText("Now Analyzing ...")
 
 
 class MainWindow(QMainWindow):
@@ -714,8 +720,8 @@ class MainWindow(QMainWindow):
 
     def initLogDir(self):
 
-        datatime = datetime.now().strftime("%Y%m%d_%H%M%S") # .strftime("%Y/%m/%d %H:%M:%S")
-        self.logDir = "%s/%s_%s" % (self.dirName, self.userName, datatime)
+        datatime = datetime.now().strftime("%Y.%m.%d_%H.%M.%S") # .strftime("%Y/%m/%d %H:%M:%S")
+        self.logDir = "%s/%s_Ver%s_%s_%s" % (self.dirName, APPLICATION_NAME, VERSION_NUMBER, self.userName, datatime)
 
         if not os.path.exists(self.logDir):
             os.makedirs(self.logDir)
@@ -724,9 +730,9 @@ class MainWindow(QMainWindow):
 
         if mode == "Test1" or mode == "Test2" or mode == "Test3":
 
-            self.testScene.setPosAndSize(frameSize=self.frameSize())
+            self.testScene.setPosAndSize(frameSize=self.geometry().size())
             self.testScene.mode = mode
-            self.testScene.setLogDir(logDir=self.logDir) ############# ↑
+            self.testScene.setLogDir(logDir=self.logDir)
             self.graphicView.setScene(self.testScene)
 
             self.testScene.process = "Start"
@@ -734,7 +740,7 @@ class MainWindow(QMainWindow):
 
         if mode == "Result":
 
-            self.resultScene.setPosAndSize(frameSize=self.frameSize())
+            self.resultScene.setPosAndSize(frameSize=self.geometry().size())
             self.resultScene.setParam(logDir=self.logDir, analyzeMethod=self.analyzeMethod, mode=self.testScene.mode)
             self.graphicView.setScene(self.resultScene)
 
@@ -746,7 +752,7 @@ class MainWindow(QMainWindow):
             
         if mode == "Title":
 
-            self.titleScene.setPosAndSize(frameSize=self.frameSize())
+            self.titleScene.setPosAndSize(frameSize=self.geometry().size())
             self.progress.hide()
             self.graphicView.setScene(self.titleScene)
 
@@ -772,7 +778,7 @@ class MainWindow(QMainWindow):
         self.graphicView.scene().setPosAndSize(frameSize=event.size())
 
         self.progress.setGeometry(0, 0, int(self.width() * 0.3), int(self.height() * 0.03))
-        self.progress.setGeometry(int((self.width() - self.progress.width()) * 0.52), int((self.height() - self.progress.height()) * 0.6), self.progress.width(), self.progress.height())
+        self.progress.setGeometry(int((self.width() - self.progress.width()) * 0.5), int((self.height() - self.progress.height()) * 0.6), self.progress.width(), self.progress.height())
 
     def onCountChanged(self, value):
         self.progress.setValue(value)
