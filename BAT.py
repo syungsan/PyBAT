@@ -146,7 +146,7 @@ class TitleScene(QGraphicsScene):
         self.copyrightLabel.setBrush(Qt.black)
         self.addItem(self.copyrightLabel)
 
-        self.makeFigCheckBox = QCheckBox("Make Figue")
+        self.makeFigCheckBox = QCheckBox("Make Figure")
         self.makeFigCheckBox.stateChanged.connect(self.makeFigCheckBoxChangedAction)
         self.makeFigCheckBox.setChecked(DEFAULT_IS_MAKE_FIGURE)
         self.addWidget(self.makeFigCheckBox)
@@ -208,7 +208,7 @@ class TitleScene(QGraphicsScene):
         makeFigCheckBoxFontSize = int(unitRatio * 0.2)
         self.makeFigCheckBox.setFont(QFont(DEFAULT_FONT_NAME, makeFigCheckBoxFontSize))
 
-        makeFigCheckBoxWidth = makeFigCheckBoxFontSize * 8
+        makeFigCheckBoxWidth = makeFigCheckBoxFontSize * 9
         makeFigCheckBoxHeight = int(makeFigCheckBoxFontSize * 1.4)
 
         self.makeFigCheckBox.setMaximumWidth(makeFigCheckBoxWidth)
