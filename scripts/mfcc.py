@@ -3,7 +3,7 @@
 
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 
 import numpy as np
 import python_speech_features as psf
@@ -12,6 +12,7 @@ import scipy.io
 import scipy.io.wavfile
 import scipy.ndimage
 import scipy.signal
+from multiprocessing import Pool
 
 
 def getMfcc(fileName):
@@ -79,55 +80,10 @@ def run(fileName, figName, vadThreshold):
     # max len
     xlim = [0, dataLength]
 
-    plot.style.use('classic')
-    plot.figure(figsize=(12, 10))
-    # heatmap
-    plot.subplot(5, 1, 1)
-    plot.xlim(xlim)
-    #plot.heatmap(heatmap)
-    plot.pcolor(mfccHeatmap, cmap=plot.cm.Blues)
-
-    # power, delta
-    plot.subplot(5, 1, 2)
-    plot.xlim(xlim)
-    plot.plot(mfccPower)
-    plot.plot(deltaPower)
-
-    # vad
-    plot.subplot(5, 1, 3)
-    plot.xlim(xlim)
-    plot.plot(vad)
-    sx = np.where(vadPeekMin == 1)[0]
-    sy = vad[sx]
-    plot.scatter(sx, sy, c="blue")
-    sx = np.where(vadPeekMax == 1)[0]
-    sy = vad[sx]
-    plot.scatter(sx, sy, c="red")
-    yline = [vadThreshold] * dataLength
-    plot.plot(yline)
-
-    # mora
-    plot.subplot(5, 1, 4)
-    plot.xlim(xlim)
-    plot.plot(mora)
-    sx = np.where(moraPeekMin == 1)[0]
-    sy = mora[sx]
-    plot.scatter(sx, sy, c="blue")
-    sx = np.where(moraPeekMax == 1)[0]
-    sy = mora[sx]
-    plot.scatter(sx, sy, c="red")
-
-    # vad
-    plot.subplot(5, 1, 5)
-    plot.xlim(xlim)
-    plot.plot(vadSection)
-    sx = np.where(moraPositions == 1)[0]
-    sy = np.ones(len(sx))
-    plot.scatter(sx, sy)
-    #vadSection
-    #moraPositions
-
-    plot.savefig(figName)
+    if figName != "":
+        p = Pool(1)
+        p.map(plot, [[xlim, mfccHeatmap, mfccPower, deltaPower, vad, vadPeekMin, vadPeekMax, vadThreshold, dataLength, mora, moraPeekMin, moraPeekMax, vadSection, moraPositions, figName]])
+        p.close()
 
     calcIntervals = []
     for i in range(len(vadSection)):
@@ -146,6 +102,60 @@ def run(fileName, figName, vadThreshold):
         interval = endTime - startTime
 
     return startTime, endTime, interval
+
+def plot(args):
+
+    xlim, mfccHeatmap, mfccPower, deltaPower, vad, vadPeekMin, vadPeekMax, vadThreshold, dataLength, mora, moraPeekMin, moraPeekMax, vadSection, moraPositions, figName = args
+
+    plt.style.use('classic')
+    plt.figure(figsize=(12, 10))
+    # heatmap
+    plt.subplot(5, 1, 1)
+    plt.xlim(xlim)
+    # plot.heatmap(heatmap)
+    plt.pcolor(mfccHeatmap, cmap=plt.cm.Blues)
+
+    # power, delta
+    plt.subplot(5, 1, 2)
+    plt.xlim(xlim)
+    plt.plot(mfccPower)
+    plt.plot(deltaPower)
+
+    # vad
+    plt.subplot(5, 1, 3)
+    plt.xlim(xlim)
+    plt.plot(vad)
+    sx = np.where(vadPeekMin == 1)[0]
+    sy = vad[sx]
+    plt.scatter(sx, sy, c="blue")
+    sx = np.where(vadPeekMax == 1)[0]
+    sy = vad[sx]
+    plt.scatter(sx, sy, c="red")
+    yline = [vadThreshold] * dataLength
+    plt.plot(yline)
+
+    # mora
+    plt.subplot(5, 1, 4)
+    plt.xlim(xlim)
+    plt.plot(mora)
+    sx = np.where(moraPeekMin == 1)[0]
+    sy = mora[sx]
+    plt.scatter(sx, sy, c="blue")
+    sx = np.where(moraPeekMax == 1)[0]
+    sy = mora[sx]
+    plt.scatter(sx, sy, c="red")
+
+    # vad
+    plt.subplot(5, 1, 5)
+    plt.xlim(xlim)
+    plt.plot(vadSection)
+    sx = np.where(moraPositions == 1)[0]
+    sy = np.ones(len(sx))
+    plt.scatter(sx, sy)
+    # vadSection
+    # moraPositions
+
+    plt.savefig(figName)
 
 
 if __name__ == "__main__":

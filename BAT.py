@@ -22,11 +22,12 @@ from datetime import datetime
 import threading
 import glob
 import shutil
+import time
 
 from scripts import record, sma, excel, mfcc, item
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = "0.8.5"
+VERSION_NUMBER = "0.8.6"
 
 INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
@@ -34,6 +35,7 @@ WINDOW_SIZE = [1280, 720]
 KIND_OF_TEST_STRINGS = ["Test1", "Test2", "Test3"]
 ANALIZE_METHOD_STRINGS = ["SMA", "MFCC"]
 DEFAULT_ANALYZE_METHOD = "SMA"
+DEFAULT_IS_MAKE_FIGURE = False
 
 WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["つ", "さ", "ひ", "く", "え", "し", "み"],
@@ -42,10 +44,10 @@ WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["そ", "ち", "ふ", "ち", "す", "ろ", "ね"],
          ["の", "よ", "ま", "あ", "ゆ", "き", "れ"]]
 
-READS = ["か", "は", "き", "せ"] # , "つ", "と", "こ", "ふ",
-         # "け", "し", "ら", "れ", "え", "そ", "お", "よ",
-         # "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
-         # "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
+READS = ["か", "は", "き", "せ", "つ", "と", "こ", "ふ",
+         "け", "し", "ら", "れ", "え", "そ", "お", "よ",
+         "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
+         "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
 
 EXCEPTION = [3, 10, 16, 17, 18, 23, 24, 25, 31, 38]
 
@@ -54,11 +56,11 @@ ELLIPSE_POSITIONS = [11, 33, 6, 7, 4, 41, 32, 32, 5, 22, 12, 14, 21, 12, 4, 2, 2
 STAR_POSITIONS = [36, 6, 8, 34, 36, 35, 21, 1, 37, 7, 27, 28, 32, 8, 41, 13, 11, 28, 26, 14, 30, 0, 28, 1, 12, 36, 0, 41, 4, 26, 21, 28]
 RED_NUMBERS = [0, 2, 2, 0, 0, 2, 0, 0, 2, 1, 2, 2, 1, 1, 2, 0, 0, 2, 2, 2, 0, 2, 0, 2, 2, 1, 1, 0, 2, 1, 0, 0]
 
-xPaddingMargin_RATIO = 0.01
-yPaddingMargin_RATIO = 0.01
+X_PADDING_MARGIN_RATIO = 0.01
+Y_PADDING_MARGIN_RATIO = 0.01
 
 # 中央の段差
-centerSpan_RATIO = 0.1
+CENTER_SPAN_RATIO = 0.1
 
 WORD_FONT_SIZE_RATIO = 0.6
 
@@ -72,7 +74,7 @@ PROGRESS_LIMIT = 100
 MFCC_VAD_THRESHOLD = 3.0
 SMA_WINDOW_SIZE = 100
 SMA_VAD_THRESHOLD = 0.1
-SMA_MIN_NOISE_LEVEL = 10.0
+SMA_MIN_NOISE_LEVEL = 1.0
 
 if os.name == "nt":
     DEFAULT_FONT_NAME = "Meiryo"
@@ -144,6 +146,11 @@ class TitleScene(QGraphicsScene):
         self.copyrightLabel.setBrush(Qt.black)
         self.addItem(self.copyrightLabel)
 
+        self.makeFigCheckBox = QCheckBox("Make Figue")
+        self.makeFigCheckBox.stateChanged.connect(self.makeFigCheckBoxChangedAction)
+        self.makeFigCheckBox.setChecked(DEFAULT_IS_MAKE_FIGURE)
+        self.addWidget(self.makeFigCheckBox)
+
     def setPosAndSize(self, frameSize):
 
         self.setSceneRect(0, 0, frameSize.width(), frameSize.height())
@@ -162,7 +169,7 @@ class TitleScene(QGraphicsScene):
         self.versionNumberLabel.setPos(self.titleLabel.x() + self.titleLabel.boundingRect().width() - self.versionNumberLabel.boundingRect().width(), self.titleLabel.y() + self.titleLabel.boundingRect().height())
 
         self.analyzeMethodLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
-        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.45)
+        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.4)
 
         for index, analyzeMethodRadioButton in enumerate(self.analyzeMethodRadioButtons):
 
@@ -174,9 +181,9 @@ class TitleScene(QGraphicsScene):
 
             analyzeMethodRadioButton.setMaximumWidth(analyzeMethodRadioButtonWidth)
             analyzeMethodRadioButton.setMaximumHeight(analyzeMethodRadioButtonHeight)
-            analyzeMethodRadioButton.setGeometry(0, 0, analyzeMethodRadioButtonWidth, analyzeMethodRadioButtonFontSize)
+            analyzeMethodRadioButton.setGeometry(0, 0, analyzeMethodRadioButtonWidth, analyzeMethodRadioButtonHeight)
 
-            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.45 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
+            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.4 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
 
         for index, testButton in enumerate(self.testButtons):
 
@@ -198,6 +205,18 @@ class TitleScene(QGraphicsScene):
         self.copyrightLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.copyrightLabel.setPos((self.width() - self.copyrightLabel.boundingRect().width()) * 0.5, (self.height() - self.copyrightLabel.boundingRect().height()) * 0.9)
 
+        makeFigCheckBoxFontSize = int(unitRatio * 0.2)
+        self.makeFigCheckBox.setFont(QFont(DEFAULT_FONT_NAME, makeFigCheckBoxFontSize))
+
+        makeFigCheckBoxWidth = makeFigCheckBoxFontSize * 8
+        makeFigCheckBoxHeight = int(makeFigCheckBoxFontSize * 1.4)
+
+        self.makeFigCheckBox.setMaximumWidth(makeFigCheckBoxWidth)
+        self.makeFigCheckBox.setMaximumHeight(makeFigCheckBoxHeight)
+        self.makeFigCheckBox.setGeometry(0, 0, makeFigCheckBoxWidth, makeFigCheckBoxHeight)
+
+        self.makeFigCheckBox.move(int((self.width() - self.makeFigCheckBox.width()) * 0.5), int((self.height() - self.makeFigCheckBox.height()) * 0.55))
+
     def onClickedAnalyzeingMethodRadioButton(self):
 
         analyzeMethodRadioButton = self.sender()
@@ -210,6 +229,13 @@ class TitleScene(QGraphicsScene):
 
     def onClickedTestButton(self):
         self.parent().sceneManager(mode=self.sender().text())
+
+    def makeFigCheckBoxChangedAction(self, state):
+
+        if (Qt.Checked == state):
+            self.parent().isMakeFig = True
+        else:
+            self.parent().isMakeFig = False
 
 
 class RecordingThread(QThread):
@@ -312,12 +338,12 @@ class TestScene(QGraphicsScene):
 
         self.baseLayer.rect = self.sceneRect()
 
-        xPaddingMargin = self.baseLayer.rect.width() * xPaddingMargin_RATIO
-        yPaddingMargin = self.baseLayer.rect.height() * yPaddingMargin_RATIO
+        xPaddingMargin = self.baseLayer.rect.width() * X_PADDING_MARGIN_RATIO
+        yPaddingMargin = self.baseLayer.rect.height() * Y_PADDING_MARGIN_RATIO
 
         wordFontSize = unitRatio * WORD_FONT_SIZE_RATIO
 
-        centerSpan = self.baseLayer.rect.height() * centerSpan_RATIO
+        centerSpan = self.baseLayer.rect.height() * CENTER_SPAN_RATIO
         yOneLength = (self.baseLayer.rect.height() - (yPaddingMargin * 2.0) - centerSpan) / len(WORDS)
 
         yPos = 0
@@ -575,10 +601,11 @@ class ResultScene(QGraphicsScene):
         self.titleLabel.setBrush(Qt.black)
         self.addItem(self.titleLabel)
 
-    def setParam(self, logDir, analyzeMethod, mode):
+    def setParam(self, logDir, analyzeMethod, isMakeFig, mode):
 
-        self.analyze = Analyze(logDir=logDir, analyzeMethod=analyzeMethod, mode=mode, parent=self)
-        self.analyze.countChanged.connect(self.parent().onCountChanged)
+        self.analyzeThread = AnalyzeThread(logDir=logDir, analyzeMethod=analyzeMethod, isMakeFig=isMakeFig, mode=mode, parent=self)
+        self.analyzeThread.countChanged.connect(self.parent().onCountChanged)
+        self.analyzeThread.finished.connect(self.analyzeFinish)
 
     def setPosAndSize(self, frameSize):
 
@@ -594,19 +621,25 @@ class ResultScene(QGraphicsScene):
         self.titleLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.7)))
         self.titleLabel.setPos((self.width() - self.titleLabel.boundingRect().width()) * 0.5, (self.height() - self.titleLabel.boundingRect().height()) * 0.2)
 
+    def analyzeFinish(self):
 
-class Analyze(QThread):
+        time.sleep(3)
+        self.parent().sceneManager(mode="Title")
+
+
+class AnalyzeThread(QThread):
 
     """
     Runs a counter thread.
     """
     countChanged = pyqtSignal(int)
 
-    def __init__(self, logDir, analyzeMethod, mode, parent=None):
+    def __init__(self, logDir, analyzeMethod, isMakeFig, mode, parent=None):
         super().__init__(parent)
 
         self.logDir = logDir
         self.analyzeMethod = analyzeMethod
+        self.isMakeFig = isMakeFig
         self.mode = mode
 
     def run(self):
@@ -626,13 +659,12 @@ class Analyze(QThread):
             shutil.copy(dataPath, distinationPath)
 
         progressCount = 0
+        progressDeff = int(PROGRESS_LIMIT / (len(READS) + 1))
 
         wavDirPath = "%s/wavs" % self.logDir
         if os.path.isdir(wavDirPath):
 
             wavPaths = glob.glob("%s/*.wav" % wavDirPath)
-            progressDeff = int(PROGRESS_LIMIT / (len(READS) + 1))
-
             for wavPath in wavPaths:
 
                 root, ext = os.path.splitext(wavPath)
@@ -641,17 +673,29 @@ class Analyze(QThread):
                 if self.mode.lower() in baseName:
                     print("Analyzing %s.wav" % baseName)
 
-                    figDir = "%s/figs" % self.logDir
-                    if not os.path.isdir(figDir):
-                        os.mkdir(figDir)
+                    if self.isMakeFig:
+                        figDir = "%s/figs" % self.logDir
+                        if not os.path.isdir(figDir):
+                            os.mkdir(figDir)
 
                     if self.analyzeMethod == "MFCC":
 
-                        startTime, endTime, interval = mfcc.run(fileName=wavPath, figName="%s/%s_mfcc.png" % (figDir, baseName), vadThreshold=MFCC_VAD_THRESHOLD)
+                        if self.isMakeFig:
+                            figName = "%s/%s_mfcc.png" % (figDir, baseName)
+                        else:
+                            figName = ""
+
+                        startTime, endTime, interval = mfcc.run(fileName=wavPath, figName=figName, vadThreshold=MFCC_VAD_THRESHOLD)
                         excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "SMA":
-                        startTime, endTime, interval = sma.run(fileName=wavPath, figName="%s/%s_sma.png" % (figDir, baseName), window=SMA_WINDOW_SIZE, vadThreshold=SMA_VAD_THRESHOLD, minNoiseLevel=SMA_MIN_NOISE_LEVEL)
+
+                        if self.isMakeFig:
+                            figName = "%s/%s_sma.png" % (figDir, baseName)
+                        else:
+                            figName = ""
+
+                        startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, window=SMA_WINDOW_SIZE, vadThreshold=SMA_VAD_THRESHOLD, minNoiseLevel=SMA_MIN_NOISE_LEVEL)
                         excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
 
                     datas = [startTime, endTime, interval]
@@ -665,14 +709,6 @@ class Analyze(QThread):
         progressCount = PROGRESS_LIMIT
         self.countChanged.emit(progressCount)
 
-        self.parent().titleLabel.setText("Thank you !!")
-
-        import time
-        time.sleep(3)
-
-        self.parent().parent().sceneManager(mode="Title")
-        self.parent().titleLabel.setText("Now Analyzing ...")
-
 
 class MainWindow(QMainWindow):
 
@@ -681,7 +717,8 @@ class MainWindow(QMainWindow):
 
         self.dirName = ""
         self.userName = ""
-        self.analyzeMethod = ""
+        self.analyzeMethod = DEFAULT_ANALYZE_METHOD
+        self.isMakeFig = DEFAULT_IS_MAKE_FIGURE
 
         # ウインドウサイズを設定
         self.resize(WINDOW_SIZE[0], WINDOW_SIZE[1])
@@ -712,9 +749,9 @@ class MainWindow(QMainWindow):
         self.progress.setGeometry(0, 0, int(self.width() * 0.3), int(self.height() * 0.03))
         self.progress.setMaximum(PROGRESS_LIMIT)
 
-        self.titleScene = TitleScene(parent=self)
-        self.testScene = TestScene(parent=self)
-        self.resultScene = ResultScene(parent=self)
+        # self.titleScene = TitleScene(parent=self)
+        # self.testScene = TestScene(parent=self)
+        # self.resultScene = ResultScene(parent=self)
 
         self.sceneManager(mode="Title")
 
@@ -730,6 +767,7 @@ class MainWindow(QMainWindow):
 
         if mode == "Test1" or mode == "Test2" or mode == "Test3":
 
+            self.testScene = TestScene(parent=self)
             self.testScene.setPosAndSize(frameSize=self.geometry().size())
             self.testScene.mode = mode
             self.testScene.setLogDir(logDir=self.logDir)
@@ -740,21 +778,23 @@ class MainWindow(QMainWindow):
 
         if mode == "Result":
 
-            self.resultScene.setPosAndSize(frameSize=self.geometry().size())
-            self.resultScene.setParam(logDir=self.logDir, analyzeMethod=self.analyzeMethod, mode=self.testScene.mode)
-            self.graphicView.setScene(self.resultScene)
+            resultScene = ResultScene(parent=self)
+            resultScene.setPosAndSize(frameSize=self.geometry().size())
+            resultScene.setParam(logDir=self.logDir, analyzeMethod=self.analyzeMethod, isMakeFig=self.isMakeFig, mode=self.testScene.mode)
+            self.graphicView.setScene(resultScene)
 
             self.progress.setGeometry(int((self.width() - self.progress.width()) * 0.52), int((self.height() - self.progress.height()) * 0.6), self.progress.width(), self.progress.height())
             self.progress.setValue(0)
             self.progress.show()
 
-            self.resultScene.analyze.start()
+            resultScene.analyzeThread.start()
             
         if mode == "Title":
 
-            self.titleScene.setPosAndSize(frameSize=self.geometry().size())
+            titleScene = TitleScene(parent=self)
             self.progress.hide()
-            self.graphicView.setScene(self.titleScene)
+            titleScene.setPosAndSize(frameSize=self.geometry().size())
+            self.graphicView.setScene(titleScene)
 
     def keyPressEvent(self, event):
 

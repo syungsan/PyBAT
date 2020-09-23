@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import wave
+from multiprocessing import Pool
 
 
 def ReadWavFile(fileName):
@@ -19,7 +20,7 @@ def ReadWavFile(fileName):
     data = wr.readframes(wr.getnframes())
     wr.close()
 
-    x = np.frombuffer(data, dtype="int16") / float((2^15))
+    x = np.frombuffer(data, dtype="int16") / float((2 ^ 15))
     return x, framerate
 
 def simpleMovingAverage(data, window=100):
@@ -31,45 +32,60 @@ def simpleMovingAverage(data, window=100):
 def run(fileName, figName, window, vadThreshold, minNoiseLevel):
 
     rawWAV, frameRate = ReadWavFile(fileName=fileName)
-    rawWAV = abs(rawWAV)
+    rawWAV = np.abs(rawWAV)
 
     smas = simpleMovingAverage(data=rawWAV, window=window)
-    threshold = max(smas) * vadThreshold
+    smaMax = np.max(smas)
+    threshold = smaMax * vadThreshold
 
-    if threshold < minNoiseLevel:
+    isSilent = False
+    noiseLevel = (smaMax - np.min(smas)) * np.mean(smas)
+
+    if noiseLevel < minNoiseLevel:
         startFrame = 0.0
         endFrame = 0.0
+        isSilent = True
     else:
         for index, sma in enumerate(smas):
             if sma >= threshold:
                 startFrame = index
                 break
 
-        for index, sma in enumerate(reversed(smas)):
+        for index, sma in enumerate(smas[::-1]):
             if sma >= threshold:
-                endFrame = len(smas) - index
+                endFrame = smas.size - index
                 break
 
     startTime = startFrame / frameRate
     endTime = endFrame / frameRate
     interval = endTime - startTime
 
-    times = np.linspace(0, len(rawWAV) / frameRate, num=len(rawWAV))
+    if figName != "":
+        p = Pool(1)
+        p.map(plot, [[rawWAV.size, frameRate, rawWAV, smas, isSilent, threshold, startTime, endTime, figName]])
+        p.close()
+
+    return startTime, endTime, interval
+
+def plot(args):
+
+    wavSize, frameRate, rawWAV, smas, isSilent, threshold, startTime, endTime, figName = args
+
+    times = np.linspace(0, wavSize / frameRate, num=wavSize)
 
     plt.figure(figsize=(12, 10))
 
     plt.plot(times, rawWAV, label="Raw WAV")
     plt.plot(times, smas, "r", label="SMA")
 
-    plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
-    plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
-    plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
+    if not isSilent:
+        plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
+        plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
+        plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
 
     plt.legend()
     plt.savefig(figName)
     # plt.show()
-
-    return startTime, endTime, interval
 
 
 if __name__ == "__main__":
