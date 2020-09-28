@@ -44,10 +44,10 @@ if __name__ == '__main__':
     import pprint
     import shutil
 
-    shutil.copy("../data/result_template.xlsx", "./temp/result_test.xlsx")
+    shutil.copy("../data/result_template.xlsx", "../temp/result_test.xlsx")
 
-    test1_l_2d = get_list_2d("./temp/result_test.xlsx", "VAD解析結果", 3, 34, 1, 4)
-    test2_l_2d = get_list_2d("./temp/result_test.xlsx", "VAD解析結果", 3, 34, 6, 9)
+    test1_l_2d = get_list_2d("../temp/result_test.xlsx", "VAD", 3, 34, 1, 4)
+    test2_l_2d = get_list_2d("../temp/result_test.xlsx", "VAD", 3, 34, 6, 9)
 
     pprint.pprint(test1_l_2d, width=40)
     pprint.pprint(test2_l_2d, width=40)
@@ -55,10 +55,10 @@ if __name__ == '__main__':
     test1_datas = [["か", 0.1, 0.2, 0.1], ["は", 0.3, 0.4, 0.1]]
     test2_datas = [["か", 0.5, 0.6, 0.1], ["は", 0.7, 0.8, 0.1]]
 
-    over_write_list_2d("./temp/result_test.xlsx", "VAD解析結果", test1_datas, 3, 1)
-    over_write_list_2d("./temp/result_test.xlsx", "VAD解析結果", test2_datas, 3, 6)
+    over_write_list_2d("../temp/result_test.xlsx", "VAD", test1_datas, 3, 1)
+    over_write_list_2d("../temp/result_test.xlsx", "VAD", test2_datas, 3, 6)
 
-    wb = openpyxl.load_workbook("./temp/result_test.xlsx")
-    sheet = wb['VAD解析結果']
+    wb = openpyxl.load_workbook("../temp/result_test.xlsx")
+    sheet = wb["VAD"]
 
     pprint.pprint(list(sheet.values), width=40)

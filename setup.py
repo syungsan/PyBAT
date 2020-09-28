@@ -9,7 +9,7 @@ from setuptools import setup
 
 APP = ['./scripts/BAT.py']
 APP_NAME = "BAT"
-DATA_FILES = ["./data/result_template.xlsx", "./Thesquid.ink-Free-Flat-Sample-Support.ico"]
+DATA_FILES = ["./data/result_template.xlsx", "./data/Thesquid.ink-Free-Flat-Sample-Support.ico"]
 OPTIONS = {
     'argv_emulation': False,
     'iconfile': '/Users/syungsan/Documents/PyBAT/data/Thesquid.ink-Free-Flat-Sample-Support.icns',
