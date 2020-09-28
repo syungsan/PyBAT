@@ -665,7 +665,7 @@ class AnalyzeThread(QThread):
         analyzeMethodCell = { "test1": "D35", "test2": "I35", "test3": "N35" }
 
         distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "./data/result_template.xlsx"
+        dataPath = "../data/result_template.xlsx"
 
         if not os.path.isfile(distinationPath):
             shutil.copy(dataPath, distinationPath)
