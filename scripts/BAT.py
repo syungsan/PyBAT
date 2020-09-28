@@ -24,10 +24,14 @@ import glob
 import shutil
 import time
 
-from scripts import record, sma, excel, mfcc, item
+import record
+import sma
+import excel
+import mfcc
+import item
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = "0.8.6"
+VERSION_NUMBER = "0.9.0"
 
 INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
@@ -76,10 +80,18 @@ SMA_WINDOW_SIZE = 100
 SMA_VAD_THRESHOLD = 0.1
 SMA_MIN_NOISE_LEVEL = 1.0
 
+DEFAULT_USER_NAME = "Test"
+
 if os.name == "nt":
+
     DEFAULT_FONT_NAME = "Meiryo"
+    DEFAULT_LOG_LOCATION = os.getcwd().replace("\\scripts", "") + "\\log"
+
+    if not os.path.exists(DEFAULT_LOG_LOCATION):
+        os.mkdir(DEFAULT_LOG_LOCATION)
 else:
     DEFAULT_FONT_NAME = "Hiragino Sans"
+    DEFAULT_LOG_LOCATION = os.path.expanduser("~") + "/Documents"
 
 
 class TitleScene(QGraphicsScene):
@@ -177,7 +189,7 @@ class TitleScene(QGraphicsScene):
             analyzeMethodRadioButton.setFont(QFont(DEFAULT_FONT_NAME, analyzeMethodRadioButtonFontSize))
 
             analyzeMethodRadioButtonWidth = analyzeMethodRadioButtonFontSize * 5
-            analyzeMethodRadioButtonHeight = analyzeMethodRadioButtonFontSize
+            analyzeMethodRadioButtonHeight = int(analyzeMethodRadioButtonFontSize * 1.4)
 
             analyzeMethodRadioButton.setMaximumWidth(analyzeMethodRadioButtonWidth)
             analyzeMethodRadioButton.setMaximumHeight(analyzeMethodRadioButtonHeight)
@@ -734,6 +746,8 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(APPLICATION_NAME + " Ver." + str(VERSION_NUMBER))
 
+        self.setWindowIcon(QIcon("../data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
+
         # QGraphicsView
         self.graphicView = QGraphicsView()
         self.graphicView.setCacheMode(QGraphicsView.CacheBackground)
@@ -824,6 +838,18 @@ class MainWindow(QMainWindow):
         self.progress.setValue(value)
 
 
+# エディットエリアのクリックイベントに対応したQLineEdit
+class cQLineEdit(QLineEdit):
+
+    clicked = pyqtSignal()
+    def __init__(self, widget):
+        super().__init__(widget)
+
+    def mousePressEvent(self, QMouseEvent):
+        self.clicked.emit()
+
+
+# 最初のユーザ設定のためのダイアログ
 class InputDialog(QDialog):
 
     def __init__(self, parent=None):
@@ -834,9 +860,11 @@ class InputDialog(QDialog):
 
         self.resize(INPUT_DIALOG_SIZE[0], INPUT_DIALOG_SIZE[1])
 
+        # ディスプレイのサイズ取得
         desktop = qApp.desktop()
         screenGeometry = desktop.screenGeometry()
 
+        # ダイアログをスクリーンの真ん中に表示
         self.setGeometry(0, 0, self.frameSize().width(), self.frameSize().height())
         self.move(int((screenGeometry.width() - self.frameSize().width()) * 0.5), int((screenGeometry.height() - self.frameSize().height()) * 0.5))
 
@@ -844,24 +872,37 @@ class InputDialog(QDialog):
 
     def initUI(self):
 
+        self.setWindowIcon(QIcon("../data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
+
+        # 各ウェジットのフォーカスがOnかOffかのコールバック
+        QApplication.instance().focusChanged.connect(self.on_focusChanged)
+
         nameLabel = QLabel("Name :", self)
         nameLabel.move(20, 15)
 
-        self.nameLineEdit = QLineEdit(self)
+        # ユーザネーム入力フォーム
+        self.nameLineEdit = cQLineEdit(self)
         self.nameLineEdit.move(20, 30)
-        self.nameLineEdit.setText("Test")
+        self.nameLineEdit.setText(DEFAULT_USER_NAME)
+        self.nameLineEdit.setStyleSheet("color: lightgray;")
+        self.nameLineEdit.clicked.connect(self.handleNameLineTextClicked)
+        self.nameLineEdit.textChanged.connect(self.handleNameLineTextChanged)
 
         dirLabel = QLabel("Log Location :", self)
         dirLabel.move(20, 60)
 
+        # logのロケーション入力フォーム
         self.dirLineEdit = QLineEdit(self)
         self.dirLineEdit.setGeometry(0, 0, 200, 21)
         self.dirLineEdit.move(20, 75)
+        self.dirLineEdit.setStyleSheet("color: lightgray;")
 
+        # ディレクトリ選択ダイアログ
         selectDirButton = QPushButton("...", self)
         selectDirButton.move(225, 74)
-        selectDirButton.clicked.connect(self.onClickedsSlectDirButton)
+        selectDirButton.clicked.connect(self.onClickedSlectDirButton)
 
+        """ Windowsの場合Documentsフォルダの場所が変更されていても追従する
         if os.name == "nt":
 
             import ctypes.wintypes
@@ -872,34 +913,95 @@ class InputDialog(QDialog):
             ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
 
             self.firstDirName = buf.value
-        else:
-            self.firstDirName = os.path.expanduser("~") + "/Documents"
+        """
 
+        # OSごとで異なるデフォルトLog保存フォルダ
+        self.firstDirName = DEFAULT_LOG_LOCATION
         self.dirLineEdit.setText(self.firstDirName.replace("\\", "/"))
 
-        okButton = QPushButton("OK", self)
-        okButton.move(120, 130)
-        okButton.clicked.connect(self.onClickedOKButton)
+        # 次のメインウィンドウに進むためのサブミットボタン
+        self.okButton = QPushButton("OK", self)
+        self.okButton.move(120, 130)
+        self.okButton.clicked.connect(self.onClickedOKButton)
+        self.okButton.setEnabled(False)
 
         self.setWindowTitle("Input Name")
 
-    def onClickedsSlectDirButton(self):
+        # 各種設定が完成しているかどうかのフラグ
+        self.isNameSet = False
+        self.isDirSet = False
+
+    # ネーム入力フォームがクリックされたら
+    def handleNameLineTextClicked(self):
+
+        if not self.isNameSet:
+            self.nameLineEdit.setStyleSheet("color: black;")
+            self.isNameSet = True
+            self.checkSettingCompleted()
+
+    # 各種ウェジットのフォーカス状態監視
+    def on_focusChanged(self, old, now):
+
+        # if self.nameLineEdit == old:
+        #     self.nameLineEdit.setStyleSheet("color: black;")
+        #     self.isNameSet = True
+        #     self.checkSettingCompleted()
+
+        if self.dirLineEdit == now:
+            self.dirLineEdit.setStyleSheet("color: black;")
+            self.isDirSet = True
+            self.checkSettingCompleted()
+
+    # ネーム入力フォームが変更されたら
+    def handleNameLineTextChanged(self):
+
+        if not self.isNameSet:
+            self.nameLineEdit.setStyleSheet("color: black;")
+            self.isNameSet = True
+            self.checkSettingCompleted()
+
+    # 名前とLogの場所が両方入力されたかどうかのチェック
+    def checkSettingCompleted(self):
+
+        if self.isNameSet and self.isDirSet:
+            self.okButton.setEnabled(True)
+
+    # フォルダ選択ダイアログを開く
+    def onClickedSlectDirButton(self):
 
         selectDirName = QFileDialog.getExistingDirectory(self, "Select Directory", self.firstDirName)
 
         if selectDirName != "":
             self.dirLineEdit.setText(selectDirName)
+            
+            self.dirLineEdit.setStyleSheet("color: black;")
+            self.isDirSet = True
+            self.checkSettingCompleted()
 
+    # サブミットボタンを押したときの処理
     def onClickedOKButton(self):
 
-        self.accept()
-        self.parent().show()
+        # 設定したLogのパスに無理がある場合の例外処理
+        try:
+            if not os.path.exists(self.dirLineEdit.text()):
+                os.mkdir(self.dirLineEdit.text())
+        except Exception as e:
+            # print(e)
+            QMessageBox.warning(self, "Input error", "Error in the specification of log location !", QMessageBox.Ok)
+        else:
+            # 名前が空の場合の条件分岐
+            if self.nameLineEdit.text() != "":
 
-        self.parent().userName = self.nameLineEdit.text()
-        self.parent().dirName = self.dirLineEdit.text()
+                self.accept()
+                self.parent().show()
 
-        self.parent().initLogDir()
+                self.parent().userName = self.nameLineEdit.text()
+                self.parent().dirName = self.dirLineEdit.text()
+                self.parent().initLogDir()
+            else:
+                QMessageBox.warning(self, "Input error", "Name is Empty !", QMessageBox.Ok)
 
+    # ダイアログがバツボタンで閉じられたときの処理
     def closeEvent(self, event):
 
         self.reject()

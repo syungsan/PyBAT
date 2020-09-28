@@ -7,9 +7,9 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./BAT.py']
+APP = ['./scripts/BAT.py']
 APP_NAME = "BAT"
-DATA_FILES = ["./data/result_template.xlsx"]
+DATA_FILES = ["./data/result_template.xlsx", "./Thesquid.ink-Free-Flat-Sample-Support.ico"]
 OPTIONS = {
     'argv_emulation': False,
     'iconfile': '/Users/syungsan/Documents/PyBAT/data/Thesquid.ink-Free-Flat-Sample-Support.icns',
@@ -19,8 +19,8 @@ OPTIONS = {
         'CFBundleDisplayName': APP_NAME,
         'CFBundleGetInfoString': "BATってなんの略",
         'CFBundleIdentifier': "",
-        'CFBundleVersion': "0.8.6",
-        'CFBundleShortVersionString': "0.8.6",
+        'CFBundleVersion': "0.9.0",
+        'CFBundleShortVersionString': "0.9.0",
         'NSHumanReadableCopyright': "Copyright © 2020, Tadano Laboratory, All Rights Reserved"
     }
 }
