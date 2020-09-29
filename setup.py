@@ -12,7 +12,7 @@ APP_NAME = "BAT"
 DATA_FILES = ["./data/result_template.xlsx", "./data/Thesquid.ink-Free-Flat-Sample-Support.ico"]
 OPTIONS = {
     'argv_emulation': False,
-    'iconfile': '/Users/syungsan/Documents/PyBAT/data/Thesquid.ink-Free-Flat-Sample-Support.icns',
+    'iconfile': './data/Thesquid.ink-Free-Flat-Sample-Support.icns',
     'strip': True,
     'plist': {
         'CFBundleName': APP_NAME,
