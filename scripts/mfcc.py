@@ -12,7 +12,6 @@ import scipy.io
 import scipy.io.wavfile
 import scipy.ndimage
 import scipy.signal
-from multiprocessing import Pool
 
 
 def getMfcc(fileName):
@@ -80,33 +79,6 @@ def run(fileName, figName, vadThreshold):
     # max len
     xlim = [0, dataLength]
 
-    if figName != "":
-        p = Pool(1)
-        p.map(plot, [[xlim, mfccHeatmap, mfccPower, deltaPower, vad, vadPeekMin, vadPeekMax, vadThreshold, dataLength, mora, moraPeekMin, moraPeekMax, vadSection, moraPositions, figName]])
-        p.close()
-
-    calcIntervals = []
-    for i in range(len(vadSection)):
-
-        if vadSection[i] == 1:
-            calcIntervals.append(i)
-
-    startTime = 0.0
-    endTime = 0.0
-    interval = 0.0
-
-    if len(calcIntervals) > 0:
-
-        startTime = calcIntervals[0] / 100.0
-        endTime = calcIntervals[-1] / 100.0
-        interval = endTime - startTime
-
-    return startTime, endTime, interval
-
-def plot(args):
-
-    xlim, mfccHeatmap, mfccPower, deltaPower, vad, vadPeekMin, vadPeekMax, vadThreshold, dataLength, mora, moraPeekMin, moraPeekMax, vadSection, moraPositions, figName = args
-
     plt.style.use('classic')
     plt.figure(figsize=(12, 10))
     # heatmap
@@ -156,6 +128,26 @@ def plot(args):
     # moraPositions
 
     plt.savefig(figName)
+
+    plt.close() # ■■■ 追加 ■■■
+
+    calcIntervals = []
+    for i in range(len(vadSection)):
+
+        if vadSection[i] == 1:
+            calcIntervals.append(i)
+
+    startTime = 0.0
+    endTime = 0.0
+    interval = 0.0
+
+    if len(calcIntervals) > 0:
+
+        startTime = calcIntervals[0] / 100.0
+        endTime = calcIntervals[-1] / 100.0
+        interval = endTime - startTime
+
+    return startTime, endTime, interval
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import wave
-from multiprocessing import Pool
 
 
 def ReadWavFile(fileName):
@@ -60,18 +59,7 @@ def run(fileName, figName, window, vadThreshold, minNoiseLevel):
     endTime = endFrame / frameRate
     interval = endTime - startTime
 
-    if figName != "":
-        p = Pool(1)
-        p.map(plot, [[rawWAV.size, frameRate, rawWAV, smas, isSilent, threshold, startTime, endTime, figName]])
-        p.close()
-
-    return startTime, endTime, interval
-
-def plot(args):
-
-    wavSize, frameRate, rawWAV, smas, isSilent, threshold, startTime, endTime, figName = args
-
-    times = np.linspace(0, wavSize / frameRate, num=wavSize)
+    times = np.linspace(0, rawWAV.size / frameRate, num=rawWAV.size)
 
     plt.figure(figsize=(12, 10))
 
@@ -86,6 +74,10 @@ def plot(args):
     plt.legend()
     plt.savefig(figName)
     # plt.show()
+
+    plt.close() # ■■■ 追加 ■■■
+
+    return startTime, endTime, interval
 
 
 if __name__ == "__main__":

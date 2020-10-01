@@ -19,8 +19,8 @@ OPTIONS = {
         'CFBundleDisplayName': APP_NAME,
         'CFBundleGetInfoString': "BATってなんの略",
         'CFBundleIdentifier': "",
-        'CFBundleVersion': "0.9.0",
-        'CFBundleShortVersionString': "0.9.0",
+        'CFBundleVersion': "0.9.1",
+        'CFBundleShortVersionString': "0.9.1",
         'NSHumanReadableCopyright': "Copyright © 2020, Tadano Laboratory, All Rights Reserved"
     }
 }
