@@ -9,7 +9,7 @@
 
 # Windows
 # del /s dist build
-# .\venv\python -m PyInstaller .\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
+# .\venv\python -m PyInstaller .\scripts\\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
 
 import sys
 import os
