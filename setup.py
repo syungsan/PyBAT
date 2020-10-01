@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./scripts/BAT.py']
+APP = ['./BAT.py']
 APP_NAME = "BAT"
 DATA_FILES = ["./data/result_template.xlsx", "./data/Thesquid.ink-Free-Flat-Sample-Support.ico"]
 OPTIONS = {
@@ -19,8 +19,8 @@ OPTIONS = {
         'CFBundleDisplayName': APP_NAME,
         'CFBundleGetInfoString': "BATってなんの略",
         'CFBundleIdentifier': "",
-        'CFBundleVersion': "0.9.1",
-        'CFBundleShortVersionString': "0.9.1",
+        'CFBundleVersion': "0.9.2",
+        'CFBundleShortVersionString': "0.9.2",
         'NSHumanReadableCopyright': "Copyright © 2020, Tadano Laboratory, All Rights Reserved"
     }
 }

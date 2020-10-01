@@ -29,14 +29,10 @@ import glob
 import shutil
 import time
 
-import record
-import sma
-import excel
-import mfcc
-import item
+from scripts import record, sma, excel, mfcc, item
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = "0.9.1"
+VERSION_NUMBER = "0.9.2"
 
 INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
@@ -670,7 +666,7 @@ class AnalyzeThread(QThread):
         analyzeMethodCell = { "test1": "D35", "test2": "I35", "test3": "N35" }
 
         distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "../data/result_template.xlsx"
+        dataPath = "./data/result_template.xlsx"
 
         if not os.path.isfile(distinationPath):
             shutil.copy(dataPath, distinationPath)
@@ -751,7 +747,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(APPLICATION_NAME + " Ver." + str(VERSION_NUMBER))
 
-        self.setWindowIcon(QIcon("../data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
+        self.setWindowIcon(QIcon("./data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
 
         # QGraphicsView
         self.graphicView = QGraphicsView()
@@ -877,7 +873,7 @@ class InputDialog(QDialog):
 
     def initUI(self):
 
-        self.setWindowIcon(QIcon("../data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
+        self.setWindowIcon(QIcon("./data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
 
         # 各ウェジットのフォーカスがOnかOffかのコールバック
         QApplication.instance().focusChanged.connect(self.on_focusChanged)
