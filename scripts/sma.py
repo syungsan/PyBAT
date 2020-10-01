@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import wave
+import gc
 
 
 def ReadWavFile(fileName):
@@ -75,7 +76,11 @@ def run(fileName, figName, window, vadThreshold, minNoiseLevel):
     plt.savefig(figName)
     # plt.show()
 
-    plt.close() # ■■■ 追加 ■■■
+    # ■■■ 追加 ■■■
+    plt.cla()
+    plt.clf()
+    plt.close()
+    gc.collect()
 
     return startTime, endTime, interval
 

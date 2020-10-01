@@ -4,6 +4,7 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import gc
 
 import numpy as np
 import python_speech_features as psf
@@ -129,7 +130,11 @@ def run(fileName, figName, vadThreshold):
 
     plt.savefig(figName)
 
-    plt.close() # ■■■ 追加 ■■■
+    # ■■■ 追加 ■■■
+    plt.cla()
+    plt.clf()
+    plt.close()
+    gc.collect()
 
     calcIntervals = []
     for i in range(len(vadSection)):
