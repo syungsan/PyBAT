@@ -83,6 +83,12 @@ SMA_MIN_NOISE_LEVEL = 1.0
 
 DEFAULT_USER_NAME = "Test"
 
+print("work dir:", os.getcwd())
+print('sys.executable:', sys.executable)
+print('sys._MEIPASS:', sys._MEIPASS)
+
+MEIPASS = sys._MEIPASS
+
 if os.name == "nt":
 
     DEFAULT_FONT_NAME = "Meiryo"
@@ -666,7 +672,7 @@ class AnalyzeThread(QThread):
         analyzeMethodCell = { "test1": "D35", "test2": "I35", "test3": "N35" }
 
         distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "./data/result_template.xlsx"
+        dataPath = "%s/data/result_template.xlsx" % MEIPASS
 
         if not os.path.isfile(distinationPath):
             shutil.copy(dataPath, distinationPath)
