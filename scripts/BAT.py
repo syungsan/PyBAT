@@ -4,12 +4,17 @@
 # Build Command
 
 # Mac
+# ./venv/bin/python -m pip freeze > requirements.txt
+# env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.8.5
+# ./venv/bin/python -m pip install -r requirements.txt
 # rm -rf dist/ build/
 # ./venv/bin/python setup.py py2app --packages=PIL
+# ./venv/bin/python -m PyInstaller ./scripts/BAT.py --onefile --icon=./data/Thesquid.ink-Free-Flat-Sample-Support.ico
+# ./venv/bin/python -m pip install matplotlib==3.2.2
 
 # Windows
 # del /s dist build
-# .\venv\python -m PyInstaller .\scripts\\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
+# .\venv\python -m PyInstaller .\scripts\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
 
 import sys
 import os
