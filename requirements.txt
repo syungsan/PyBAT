@@ -19,7 +19,7 @@ numpy==1.19.1
 openpyxl==3.0.5
 pefile==2019.4.18
 Pillow==7.2.0
-PyAudio @ file:///D:/TadanoProjects/PythonProjects/PyBAT/PyAudio-0.2.11-cp38-cp38-win_amd64.whl
+PyAudio @ file:///D:/Developer/Tadano/PythonProjects/PyBAT/PyAudio-0.2.11-cp38-cp38-win_amd64.whl
 pycparser==2.20
 pyinstaller==4.0
 pyinstaller-hooks-contrib==2020.7
