@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Build Command
-
 # Mac
-# ./venv/bin/python -m pip freeze > requirements.txt
+# https://qiita.com/survivor7777777/items/5a8e23d30822437ae9f9
 # env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.8.5
-# ./venv/bin/python -m pip install -r requirements.txt
-# rm -rf dist/ build/
-# ./venv/bin/python setup.py py2app --packages=PIL
-# ./venv/bin/python -m PyInstaller ./scripts/BAT.py --onefile --icon=./data/Thesquid.ink-Free-Flat-Sample-Support.ico
 # ./venv/bin/python -m pip install matplotlib==3.2.2
+# rm -rf dist/ build/
 
-# Windows
-# del /s dist build
-# .\venv\python -m PyInstaller .\scripts\BAT.py --noconsole --onefile --icon=.\data\Thesquid.ink-Free-Flat-Sample-Support.ico
+# Backup & Restore pip
+# ./venv/bin/python -m pip freeze > requirements.txt
+# ./venv/bin/python -m pip install -r requirements.txt
+
+# Build
+# auto-py-to-exe
 
 import sys
 import os
@@ -32,7 +30,7 @@ import time
 from scripts import record, sma, excel, mfcc, item
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = "0.9.2"
+VERSION_NUMBER = "0.9.3"
 
 INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
@@ -84,21 +82,23 @@ SMA_MIN_NOISE_LEVEL = 1.0
 DEFAULT_USER_NAME = "Test"
 
 print("work dir:", os.getcwd())
-print('sys.executable:', sys.executable)
-print('sys._MEIPASS:', sys._MEIPASS)
+print("sys.executable:", sys.executable)
 
-MEIPASS = sys._MEIPASS
+# 圧縮実行ファイル展開時のディレクトリのパス取得
+def resource_path(relative):
+
+    if hasattr(sys, "_MEIPASS"):
+        print("sys._MEIPASS:", sys._MEIPASS)
+        return os.path.join(sys._MEIPASS, relative)
+    return os.path.join(relative)
 
 if os.name == "nt":
 
     DEFAULT_FONT_NAME = "Meiryo"
     DEFAULT_LOG_LOCATION = os.getcwd().replace("\\scripts", "") + "\\log"
-
-    if not os.path.exists(DEFAULT_LOG_LOCATION):
-        os.mkdir(DEFAULT_LOG_LOCATION)
 else:
     DEFAULT_FONT_NAME = "Hiragino Sans"
-    DEFAULT_LOG_LOCATION = os.path.expanduser("~") + "/Documents"
+    DEFAULT_LOG_LOCATION = os.path.expanduser("~") + "/Documents/log"
 
 
 class TitleScene(QGraphicsScene):
@@ -416,7 +416,7 @@ class TestScene(QGraphicsScene):
             for wordItem in self.wordItems:
                 wordItem.hide()
 
-        if self.process == "Test":
+        if self.process == "PreWait":
             if self.mode == "Test2":
                 for wordItem in self.wordItems:
                     wordItem.show()
@@ -435,6 +435,9 @@ class TestScene(QGraphicsScene):
         if self.process == "Start":
             self.start()
 
+        elif self.process == "PreWait":
+            self.preWait()
+
         elif self.process == "Test":
 
             if self.mode == "Test1":
@@ -450,6 +453,18 @@ class TestScene(QGraphicsScene):
     def start(self):
 
         if self.scheduleTimer >= 300:
+
+            if self.mode == "Test2":
+                self.process = "PreWait"
+            else:
+                self.process = "Test"
+            self.changeProcess()
+        else:
+            self.scheduleTimer += 1
+
+    def preWait(self):
+
+        if self.scheduleTimer >= 180:
 
             self.process = "Test"
             self.changeProcess()
@@ -533,19 +548,19 @@ class TestScene(QGraphicsScene):
 
                         self.showCount = k
                         self.wavPath = "%s/wavs/test2_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, READS[self.showWordIndex])
-                        self.recTime = 3.5
+                        self.recTime = 5.0
 
                     k += 1
 
             self.showWordIndex += 1
 
-        if self.scheduleTimer > 0 and self.scheduleTimer <= 32:
+        if self.scheduleTimer > 0 and self.scheduleTimer <= 30:
 
-            redValue = int(8 * self.scheduleTimer - 1)
+            redValue = int(8 * self.scheduleTimer + 15)
             self.wordItems[self.showCount].setPen(QPen(QColor(redValue, 0, 0, 255), 1.0))
             self.wordItems[self.showCount].setBrush(QColor(redValue, 0, 0, 255))
 
-        if self.scheduleTimer == 120:
+        if self.scheduleTimer == 210:
 
             self.wordItems[self.showCount].setPen(QPen(Qt.black, 1.0))
             self.wordItems[self.showCount].setBrush(Qt.black)
@@ -553,7 +568,7 @@ class TestScene(QGraphicsScene):
 
         self.scheduleTimer += 1
 
-        if self.scheduleTimer > 210:
+        if self.scheduleTimer > 300:
 
             if self.showWordIndex >= len(READS):
                 self.process = "End"
@@ -672,7 +687,7 @@ class AnalyzeThread(QThread):
         analyzeMethodCell = { "test1": "D35", "test2": "I35", "test3": "N35" }
 
         distinationPath = "%s/result.xlsx" % self.logDir
-        dataPath = "%s/data/result_template.xlsx" % MEIPASS
+        dataPath = resource_path("./data/result_template.xlsx")
 
         if not os.path.isfile(distinationPath):
             shutil.copy(dataPath, distinationPath)
@@ -734,6 +749,8 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowIcon(QIcon(resource_path("./data/Thesquid.ink-Free-Flat-Sample-Support.ico")))
+
         self.dirName = ""
         self.userName = ""
         self.analyzeMethod = DEFAULT_ANALYZE_METHOD
@@ -752,8 +769,6 @@ class MainWindow(QMainWindow):
         self.move(int((geometry.width() - self.width()) * 0.5), int((geometry.height() - self.height()) * 0.5))
 
         self.setWindowTitle(APPLICATION_NAME + " Ver." + str(VERSION_NUMBER))
-
-        self.setWindowIcon(QIcon("./data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
 
         # QGraphicsView
         self.graphicView = QGraphicsView()
@@ -862,6 +877,8 @@ class InputDialog(QDialog):
     def __init__(self, parent=None):
         super(InputDialog, self).__init__(parent)
 
+        self.setWindowIcon(QIcon(resource_path("./data/Thesquid.ink-Free-Flat-Sample-Support.ico")))
+
         # ensure this window gets garbage-collected when closed
         self.setAttribute(Qt.WA_DeleteOnClose)
 
@@ -878,8 +895,6 @@ class InputDialog(QDialog):
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowIcon(QIcon("./data/Thesquid.ink-Free-Flat-Sample-Support.ico"))
 
         # 各ウェジットのフォーカスがOnかOffかのコールバック
         QApplication.instance().focusChanged.connect(self.on_focusChanged)
@@ -923,8 +938,9 @@ class InputDialog(QDialog):
         """
 
         # OSごとで異なるデフォルトLog保存フォルダ
-        self.firstDirName = DEFAULT_LOG_LOCATION
-        self.dirLineEdit.setText(self.firstDirName.replace("\\", "/"))
+        self.firstDirName = DEFAULT_LOG_LOCATION.replace("\\", "/")
+        self.dirLineEdit.setText(self.firstDirName)
+
 
         # 次のメインウィンドウに進むためのサブミットボタン
         self.okButton = QPushButton("OK", self)
@@ -992,8 +1008,9 @@ class InputDialog(QDialog):
         try:
             if not os.path.exists(self.dirLineEdit.text()):
                 os.mkdir(self.dirLineEdit.text())
+
         except Exception as e:
-            # print(e)
+            print(e)
             QMessageBox.warning(self, "Input error", "Error in the specification of log location !", QMessageBox.Ok)
         else:
             # 名前が空の場合の条件分岐
