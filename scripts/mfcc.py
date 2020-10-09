@@ -74,67 +74,69 @@ def run(fileName, figName, vadThreshold):
     moraPositions[np.where(moraPeekMax == 1)] = 1
     moraPositions[vad <= vadThreshold] = 0
 
-    # plot data
-    mfccHeatmap = mfcc[:, np.arange(1, 13)].T
+    if figName != "":
 
-    # max len
-    xlim = [0, dataLength]
+        # plot data
+        mfccHeatmap = mfcc[:, np.arange(1, 13)].T
 
-    plt.style.use('classic')
-    plt.figure(figsize=(12, 10))
-    # heatmap
-    plt.subplot(5, 1, 1)
-    plt.xlim(xlim)
-    # plot.heatmap(heatmap)
-    plt.pcolor(mfccHeatmap, cmap=plt.cm.Blues)
+        # max len
+        xlim = [0, dataLength]
 
-    # power, delta
-    plt.subplot(5, 1, 2)
-    plt.xlim(xlim)
-    plt.plot(mfccPower)
-    plt.plot(deltaPower)
+        plt.style.use('classic')
+        plt.figure(figsize=(12, 10))
+        # heatmap
+        plt.subplot(5, 1, 1)
+        plt.xlim(xlim)
+        # plot.heatmap(heatmap)
+        plt.pcolor(mfccHeatmap, cmap=plt.cm.Blues)
 
-    # vad
-    plt.subplot(5, 1, 3)
-    plt.xlim(xlim)
-    plt.plot(vad)
-    sx = np.where(vadPeekMin == 1)[0]
-    sy = vad[sx]
-    plt.scatter(sx, sy, c="blue")
-    sx = np.where(vadPeekMax == 1)[0]
-    sy = vad[sx]
-    plt.scatter(sx, sy, c="red")
-    yline = [vadThreshold] * dataLength
-    plt.plot(yline)
+        # power, delta
+        plt.subplot(5, 1, 2)
+        plt.xlim(xlim)
+        plt.plot(mfccPower)
+        plt.plot(deltaPower)
 
-    # mora
-    plt.subplot(5, 1, 4)
-    plt.xlim(xlim)
-    plt.plot(mora)
-    sx = np.where(moraPeekMin == 1)[0]
-    sy = mora[sx]
-    plt.scatter(sx, sy, c="blue")
-    sx = np.where(moraPeekMax == 1)[0]
-    sy = mora[sx]
-    plt.scatter(sx, sy, c="red")
+        # vad
+        plt.subplot(5, 1, 3)
+        plt.xlim(xlim)
+        plt.plot(vad)
+        sx = np.where(vadPeekMin == 1)[0]
+        sy = vad[sx]
+        plt.scatter(sx, sy, c="blue")
+        sx = np.where(vadPeekMax == 1)[0]
+        sy = vad[sx]
+        plt.scatter(sx, sy, c="red")
+        yline = [vadThreshold] * dataLength
+        plt.plot(yline)
 
-    # vad
-    plt.subplot(5, 1, 5)
-    plt.xlim(xlim)
-    plt.plot(vadSection)
-    sx = np.where(moraPositions == 1)[0]
-    sy = np.ones(len(sx))
-    plt.scatter(sx, sy)
-    # vadSection
-    # moraPositions
+        # mora
+        plt.subplot(5, 1, 4)
+        plt.xlim(xlim)
+        plt.plot(mora)
+        sx = np.where(moraPeekMin == 1)[0]
+        sy = mora[sx]
+        plt.scatter(sx, sy, c="blue")
+        sx = np.where(moraPeekMax == 1)[0]
+        sy = mora[sx]
+        plt.scatter(sx, sy, c="red")
 
-    plt.savefig(figName)
+        # vad
+        plt.subplot(5, 1, 5)
+        plt.xlim(xlim)
+        plt.plot(vadSection)
+        sx = np.where(moraPositions == 1)[0]
+        sy = np.ones(len(sx))
+        plt.scatter(sx, sy)
+        # vadSection
+        # moraPositions
 
-    # ■■■ 追加 ■■■
-    plt.cla()
-    plt.clf()
-    plt.close()
-    gc.collect()
+        plt.savefig(figName)
+
+        # ■■■ 追加 ■■■
+        plt.cla()
+        plt.clf()
+        plt.close()
+        gc.collect()
 
     calcIntervals = []
     for i in range(len(vadSection)):

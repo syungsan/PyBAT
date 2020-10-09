@@ -62,27 +62,28 @@ def run(fileName, figName, window, vadThreshold, minNoiseLevel):
     endTime = endFrame / frameRate
     interval = endTime - startTime
 
-    times = np.linspace(0, rawWAV.size / frameRate, num=rawWAV.size)
+    if figName != "":
 
-    plt.figure(figsize=(12, 10))
+        times = np.linspace(0, rawWAV.size / frameRate, num=rawWAV.size)
 
-    plt.plot(times, rawWAV, label="Raw WAV")
-    plt.plot(times, smas, "r", label="SMA")
+        plt.figure(figsize=(12, 10))
+        plt.plot(times, rawWAV, label="Raw WAV")
+        plt.plot(times, smas, "r", label="SMA")
 
-    if not isSilent:
-        plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
-        plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
-        plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
+        if not isSilent:
+            plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
+            plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
+            plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
 
-    plt.legend()
-    plt.savefig(figName)
-    # plt.show()
+        plt.legend()
+        plt.savefig(figName)
+        # plt.show()
 
-    # ■■■ 追加 ■■■
-    plt.cla()
-    plt.clf()
-    plt.close()
-    gc.collect()
+        # ■■■ 追加 ■■■
+        plt.cla()
+        plt.clf()
+        plt.close()
+        gc.collect()
 
     return startTime, endTime, interval
 
