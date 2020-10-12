@@ -26,6 +26,7 @@ import threading
 import glob
 import shutil
 import time
+import platform
 
 from scripts import record, sma, excel, mfcc, item
 
@@ -92,7 +93,8 @@ def resource_path(relative):
         return os.path.join(sys._MEIPASS, relative)
     return os.path.join(relative)
 
-if os.name == "nt":
+pf = platform.system()
+if pf == "Windows":
 
     DEFAULT_FONT_NAME = "Meiryo"
     DEFAULT_LOG_LOCATION = os.getcwd().replace("\\scripts", "") + "\\log"
@@ -169,6 +171,10 @@ class TitleScene(QGraphicsScene):
         self.makeFigCheckBox.stateChanged.connect(self.makeFigCheckBoxChangedAction)
         self.makeFigCheckBox.setChecked(DEFAULT_IS_MAKE_FIGURE)
         self.addWidget(self.makeFigCheckBox)
+
+        # MacのMake Figureはしばらく保留
+        if pf == "Darwin":
+            self.makeFigCheckBox.setEnabled(False)
 
     def setPosAndSize(self, frameSize):
 
@@ -925,7 +931,7 @@ class InputDialog(QDialog):
         selectDirButton.clicked.connect(self.onClickedSlectDirButton)
 
         """ Windowsの場合Documentsフォルダの場所が変更されていても追従する
-        if os.name == "nt":
+        if pf == "Windows":
 
             import ctypes.wintypes
             CSIDL_PERSONAL = 5       # My Documents
