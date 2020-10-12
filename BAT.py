@@ -31,7 +31,7 @@ import platform
 from scripts import record, sma, excel, mfcc, item
 
 APPLICATION_NAME = "BAT"
-VERSION_NUMBER = "0.9.3"
+VERSION_NUMBER = "0.9.5"
 
 INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
