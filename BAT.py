@@ -173,8 +173,8 @@ class TitleScene(QGraphicsScene):
         self.addWidget(self.makeFigCheckBox)
 
         # MacのMake Figureはしばらく保留
-        if pf == "Darwin":
-            self.makeFigCheckBox.setEnabled(False)
+        # if pf == "Darwin":
+        #     self.makeFigCheckBox.setEnabled(False)
 
     def setPosAndSize(self, frameSize):
 
@@ -689,8 +689,8 @@ class AnalyzeThread(QThread):
         test3Datas = []
 
         testDatas = {"test1": test1Datas, "test2": test2Datas, "test3": test3Datas}
-        cellRecordPosition = { "test1": [3, 2], "test2": [3, 7], "test3": [3, 12] }
-        analyzeMethodCell = { "test1": "D35", "test2": "I35", "test3": "N35" }
+        cellRecordPosition = {"test1": [3, 2], "test2": [3, 7], "test3": [3, 12]}
+        analyzeMethodCell = {"test1": "D35", "test2": "I35", "test3": "N35"}
 
         distinationPath = "%s/result.xlsx" % self.logDir
         dataPath = resource_path("./data/result_template.xlsx")
