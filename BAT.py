@@ -38,7 +38,7 @@ WINDOW_SIZE = [1280, 720]
 
 KIND_OF_TEST_STRINGS = ["Test1", "Test2", "Test3"]
 ANALIZE_METHOD_STRINGS = ["SMA", "MFCC"]
-DEFAULT_ANALYZE_METHOD = "SMA"
+DEFAULT_ANALYZE_METHOD = "MFCC"
 DEFAULT_IS_MAKE_FIGURE = False
 
 WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
@@ -66,7 +66,7 @@ Y_PADDING_MARGIN_RATIO = 0.01
 # 中央の段差
 CENTER_SPAN_RATIO = 0.1
 
-WORD_FONT_SIZE_RATIO = 0.6
+WORD_FONT_SIZE_RATIO = 0.92
 
 CROSS_SIZE_RATIO = 3.0
 BOX_SIZE_RATIO = 1.5
@@ -741,13 +741,13 @@ class AnalyzeThread(QThread):
                     datas = [startTime, endTime, interval]
                     testDatas[self.mode.lower()].append(datas)
 
-                progressCount += progressDeff
-                self.countChanged.emit(progressCount)
+                    progressCount += progressDeff
+                    self.countChanged.emit(progressCount)
 
             excel.over_write_list_2d(filePath=distinationPath, sheetName="VAD", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
 
-        progressCount = PROGRESS_LIMIT
-        self.countChanged.emit(progressCount)
+            progressCount = PROGRESS_LIMIT
+            self.countChanged.emit(progressCount)
 
 
 class MainWindow(QMainWindow):
