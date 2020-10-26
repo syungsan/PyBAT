@@ -38,6 +38,18 @@ def over_write_one_value(filePath, sheetName, value, cell):
 
     wb.save(filePath)
 
+def over_write_list_1d(filePath, sheetName, l_1d, start_row, start_col):
+
+    wb = openpyxl.load_workbook(filePath)
+    sheet = wb[sheetName]
+
+    for y, row in enumerate(l_1d):
+        sheet.cell(row=start_row + y,
+                   column=start_col,
+                   value=row)
+
+    wb.save(filePath)
+
 
 if __name__ == '__main__':
 
