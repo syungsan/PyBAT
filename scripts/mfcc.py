@@ -15,12 +15,27 @@ import scipy.ndimage
 import scipy.signal
 
 
+# python_speech_featuresのmfccメソッド
+# ========================================================================
+# def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
+#                  nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,
+#      ceplifter=22,appendEnergy=True)
+# ========================================================================
+# Defaultでウィンドウレンジ25msおよびシフト幅10ms（解像度1/100秒）
+
+# ここでのΔ量とは
+# 隣接スペクトルの差分 ×
+# 回帰係数 〇
+# であり子音の特徴を捉えるのに有効
+
 def getMfcc(fileName):
     (rate, sig) = scipy.io.wavfile.read(fileName)
     mfcc = psf.mfcc(sig, rate)
     delta = psf.delta(mfcc, 2)
-    deltaDelta = psf.delta(delta, 2)
-    mfccFeature = np.c_[mfcc, delta, deltaDelta]
+    deltas = np.diff(mfcc, axis=0)
+    # deltaDelta = psf.delta(delta, 2)
+    # mfccFeature = np.c_[mfcc, delta, deltaDelta]
+    mfccFeature = np.c_[mfcc, delta]
     return mfccFeature
 
 
@@ -144,15 +159,20 @@ def run(fileName, figName, vadThreshold):
         if vadSection[i] == 1:
             calcIntervals.append(i)
 
-    startTime = 0.0
-    endTime = 0.0
-    interval = 0.0
+    # startTime = 0.0
+    # endTime = 0.0
+    # interval = 0.0
 
     if len(calcIntervals) > 0:
 
         startTime = calcIntervals[0] / 100.0
         endTime = calcIntervals[-1] / 100.0
         interval = endTime - startTime
+
+    else:
+        startTime = np.nan
+        endTime = np.nan
+        interval = np.nan
 
     return startTime, endTime, interval
 

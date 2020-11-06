@@ -42,7 +42,7 @@ KIND_OF_TEST_STRINGS = ["Test1", "Test2", "Test3"]
 ANALIZE_METHOD_STRINGS = ["SMA", "MFCC"]
 DEFAULT_ANALYZE_METHOD = "MFCC"
 DEFAULT_IS_MAKE_FIGURE = False
-DEFAULT_IS_RANDOM_QUESTIONS = True
+DEFAULT_IS_RANDOM_QUESTIONS = False
 
 WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["つ", "さ", "ひ", "く", "え", "し", "み"],
@@ -51,10 +51,10 @@ WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["そ", "ち", "ふ", "ち", "す", "ろ", "ね"],
          ["の", "よ", "ま", "あ", "ゆ", "き", "れ"]]
 
-READS = ["か", "は", "き", "せ", "つ", "と", "こ", "ふ",
-         "け", "し", "ら", "れ", "え", "そ", "お", "よ",
-         "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
-         "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
+READS = ["か", "は"] # , "き", "せ", "つ", "と", "こ", "ふ",
+         # "け", "し", "ら", "れ", "え", "そ", "お", "よ",
+         # "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
+         # "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
 
 EXCEPTION = [3, 10, 16, 17, 18, 23, 24, 25, 31, 38]
 
@@ -78,21 +78,21 @@ STAR_SIZE_RATIO = 1.8
 
 PROGRESS_LIMIT = 100
 
-MFCC_VAD_THRESHOLD = 3.0
+MFCC_VAD_THRESHOLD = 2
 SMA_WINDOW_SIZE = 100
 SMA_VAD_THRESHOLD = 0.1
 SMA_MIN_NOISE_LEVEL = 1.0
 
 DEFAULT_USER_NAME = "Test"
 
-print("work dir:", os.getcwd())
-print("sys.executable:", sys.executable)
+# print("work dir:", os.getcwd())
+# print("sys.executable:", sys.executable)
 
 # 圧縮実行ファイル展開時のディレクトリのパス取得
 def resource_path(relative):
 
     if hasattr(sys, "_MEIPASS"):
-        print("sys._MEIPASS:", sys._MEIPASS)
+        # print("sys._MEIPASS:", sys._MEIPASS)
         return os.path.join(sys._MEIPASS, relative)
     return os.path.join(relative)
 
@@ -183,6 +183,9 @@ class TitleScene(QGraphicsScene):
         self.randomQsCheckBox.stateChanged.connect(self.randomQsCheckBoxChangedAction)
         self.randomQsCheckBox.setChecked(DEFAULT_IS_RANDOM_QUESTIONS)
         self.addWidget(self.randomQsCheckBox)
+
+        if (self.parent().firstTitle):
+            self.parent().reads = READS
 
     def setPosAndSize(self, frameSize):
 
@@ -828,6 +831,7 @@ class MainWindow(QMainWindow):
         # self.testScene = TestScene(parent=self)
         # self.resultScene = ResultScene(parent=self)
 
+        self.firstTitle = True
         self.sceneManager(mode="Title")
 
     def initLogDir(self):
@@ -873,6 +877,8 @@ class MainWindow(QMainWindow):
             self.progress.hide()
             titleScene.setPosAndSize(frameSize=self.geometry().size())
             self.graphicView.setScene(titleScene)
+
+            self.firstTitle = False
 
     def keyPressEvent(self, event):
 
