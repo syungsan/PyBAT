@@ -29,7 +29,7 @@ import time
 import platform
 import copy
 
-from scripts import record, sma, excel, mfcc, item
+from scripts import record, sma, excel, mfcc, item, mix
 import scripts.fisher_yates_shuffle as fys
 
 APPLICATION_NAME = "BAT"
@@ -39,8 +39,8 @@ INPUT_DIALOG_SIZE = [320, 170]
 WINDOW_SIZE = [1280, 720]
 
 KIND_OF_TEST_STRINGS = ["Test1", "Test2", "Test3"]
-ANALIZE_METHOD_STRINGS = ["SMA", "MFCC"]
-DEFAULT_ANALYZE_METHOD = "MFCC"
+ANALIZE_METHOD_STRINGS = ["SMA", "MFCC", "Mix"]
+DEFAULT_ANALYZE_METHOD = "Mix"
 DEFAULT_IS_MAKE_FIGURE = False
 DEFAULT_IS_RANDOM_QUESTIONS = False
 
@@ -78,10 +78,10 @@ STAR_SIZE_RATIO = 1.8
 
 PROGRESS_LIMIT = 100
 
-MFCC_VAD_THRESHOLD = 2
+MIN_NOISE_LEVEL = 1.0
+MFCC_THRESHOLD = 2
 SMA_WINDOW_SIZE = 100
-SMA_VAD_THRESHOLD = 0.1
-SMA_MIN_NOISE_LEVEL = 1.0
+SMA_THRESHOLD_RATE = 0.1
 
 DEFAULT_USER_NAME = "Test"
 
@@ -205,7 +205,7 @@ class TitleScene(QGraphicsScene):
         self.versionNumberLabel.setPos(self.titleLabel.x() + self.titleLabel.boundingRect().width() - self.versionNumberLabel.boundingRect().width(), self.titleLabel.y() + self.titleLabel.boundingRect().height())
 
         self.analyzeMethodLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
-        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.4)
+        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.3)
 
         for index, analyzeMethodRadioButton in enumerate(self.analyzeMethodRadioButtons):
 
@@ -219,7 +219,7 @@ class TitleScene(QGraphicsScene):
             analyzeMethodRadioButton.setMaximumHeight(analyzeMethodRadioButtonHeight)
             analyzeMethodRadioButton.setGeometry(0, 0, analyzeMethodRadioButtonWidth, analyzeMethodRadioButtonHeight)
 
-            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.4 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
+            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.3 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
 
         for index, testButton in enumerate(self.testButtons):
 
@@ -251,7 +251,7 @@ class TitleScene(QGraphicsScene):
         self.makeFigCheckBox.setMaximumHeight(makeFigCheckBoxHeight)
         self.makeFigCheckBox.setGeometry(0, 0, makeFigCheckBoxWidth, makeFigCheckBoxHeight)
 
-        self.makeFigCheckBox.move(int((self.width() - self.makeFigCheckBox.width()) * 0.5), int((self.height() - self.makeFigCheckBox.height()) * 0.55))
+        self.makeFigCheckBox.move(int((self.width() - self.makeFigCheckBox.width()) * 0.5), int((self.height() - self.makeFigCheckBox.height()) * 0.5))
 
         randomQsCheckBoxFontSize = int(unitRatio * 0.2)
         self.randomQsCheckBox.setFont(QFont(DEFAULT_FONT_NAME, randomQsCheckBoxFontSize))
@@ -263,7 +263,7 @@ class TitleScene(QGraphicsScene):
         self.randomQsCheckBox.setMaximumHeight(randomQsCheckBoxHeight)
         self.randomQsCheckBox.setGeometry(0, 0, randomQsCheckBoxWidth, randomQsCheckBoxHeight)
 
-        self.randomQsCheckBox.move(int((self.width() - self.randomQsCheckBox.width()) * 0.5), int((self.height() - self.randomQsCheckBox.height()) * 0.6))
+        self.randomQsCheckBox.move(int((self.width() - self.randomQsCheckBox.width()) * 0.5), int((self.height() - self.randomQsCheckBox.height()) * 0.55))
 
 
     def onClickedAnalyzeingMethodRadioButton(self):
@@ -759,7 +759,7 @@ class AnalyzeThread(QThread):
                         else:
                             figName = ""
 
-                        startTime, endTime, interval = mfcc.run(fileName=wavPath, figName=figName, vadThreshold=MFCC_VAD_THRESHOLD)
+                        startTime, endTime, interval = mfcc.run(fileName=wavPath, figName=figName, vadThreshold=MFCC_THRESHOLD)
                         excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "SMA":
@@ -769,8 +769,18 @@ class AnalyzeThread(QThread):
                         else:
                             figName = ""
 
-                        startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, window=SMA_WINDOW_SIZE, vadThreshold=SMA_VAD_THRESHOLD, minNoiseLevel=SMA_MIN_NOISE_LEVEL)
+                        startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, window=SMA_WINDOW_SIZE, vadThreshold=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
                         excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
+
+                    if self.analyzeMethod == "Mix":
+
+                        if self.isMakeFig:
+                            figName = "%s/%s_mix.png" % (figDir, baseName)
+                        else:
+                            figName = ""
+
+                        startTime, endTime, interval = mix.run(fileName=wavPath, figName=figName, smaWindowSize=SMA_WINDOW_SIZE, smaThresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="Mix", cell=analyzeMethodCell[self.mode.lower()])
 
                     datas = [startTime, endTime, interval]
                     testDatas[self.mode.lower()].append(datas)

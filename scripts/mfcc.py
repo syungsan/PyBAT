@@ -170,9 +170,9 @@ def run(fileName, figName, vadThreshold):
         interval = endTime - startTime
 
     else:
-        startTime = np.nan
-        endTime = np.nan
-        interval = np.nan
+        startTime = "Input Low"
+        endTime = "Input Low"
+        interval = "Input Low"
 
     return startTime, endTime, interval
 
