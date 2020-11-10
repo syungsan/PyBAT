@@ -51,10 +51,10 @@ WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["そ", "ち", "ふ", "ち", "す", "ろ", "ね"],
          ["の", "よ", "ま", "あ", "ゆ", "き", "れ"]]
 
-READS = ["か", "は"] # , "き", "せ", "つ", "と", "こ", "ふ",
-         # "け", "し", "ら", "れ", "え", "そ", "お", "よ",
-         # "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
-         # "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
+READS = ["か", "は", "き", "せ", "つ", "と", "こ", "ふ",
+         "け", "し", "ら", "れ", "え", "そ", "お", "よ",
+         "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
+         "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
 
 EXCEPTION = [3, 10, 16, 17, 18, 23, 24, 25, 31, 38]
 
@@ -62,6 +62,8 @@ BOX_POSITIONS = [7, 35, 21, 19, 41, 15, 0, 13, 34, 33, 8, 12, 15, 39, 36, 39, 9,
 ELLIPSE_POSITIONS = [11, 33, 6, 7, 4, 41, 32, 32, 5, 22, 12, 14, 21, 12, 4, 2, 28, 13, 20, 6, 34, 36, 20, 22, 0, 2, 37, 9, 40, 22, 20, 27]
 STAR_POSITIONS = [36, 6, 8, 34, 36, 35, 21, 1, 37, 7, 27, 28, 32, 8, 41, 13, 11, 28, 26, 14, 30, 0, 28, 1, 12, 36, 0, 41, 4, 26, 21, 28]
 RED_NUMBERS = [0, 2, 2, 0, 0, 2, 0, 0, 2, 1, 2, 2, 1, 1, 2, 0, 0, 2, 2, 2, 0, 2, 0, 2, 2, 1, 1, 0, 2, 1, 0, 0]
+
+SHUFFLE_INDEXS = list(range(len(READS)))
 
 X_PADDING_MARGIN_RATIO = 0.01
 Y_PADDING_MARGIN_RATIO = 0.01
@@ -78,7 +80,7 @@ STAR_SIZE_RATIO = 1.8
 
 PROGRESS_LIMIT = 100
 
-MIN_NOISE_LEVEL = 1.0
+MIN_NOISE_LEVEL = 25.0
 MFCC_THRESHOLD = 2
 SMA_WINDOW_SIZE = 100
 SMA_THRESHOLD_RATE = 0.1
@@ -185,7 +187,7 @@ class TitleScene(QGraphicsScene):
         self.addWidget(self.randomQsCheckBox)
 
         if (self.parent().firstTitle):
-            self.parent().reads = READS
+            self.parent().read_indexs = SHUFFLE_INDEXS
 
     def setPosAndSize(self, frameSize):
 
@@ -205,7 +207,7 @@ class TitleScene(QGraphicsScene):
         self.versionNumberLabel.setPos(self.titleLabel.x() + self.titleLabel.boundingRect().width() - self.versionNumberLabel.boundingRect().width(), self.titleLabel.y() + self.titleLabel.boundingRect().height())
 
         self.analyzeMethodLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
-        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.3)
+        self.analyzeMethodLabel.setPos((self.width() - self.analyzeMethodLabel.boundingRect().width()) * 0.5, (self.height() - self.analyzeMethodLabel.boundingRect().height()) * 0.4)
 
         for index, analyzeMethodRadioButton in enumerate(self.analyzeMethodRadioButtons):
 
@@ -219,7 +221,7 @@ class TitleScene(QGraphicsScene):
             analyzeMethodRadioButton.setMaximumHeight(analyzeMethodRadioButtonHeight)
             analyzeMethodRadioButton.setGeometry(0, 0, analyzeMethodRadioButtonWidth, analyzeMethodRadioButtonHeight)
 
-            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.3 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
+            analyzeMethodRadioButton.move(int((self.width() - analyzeMethodRadioButton.width()) * 0.5), int(self.height() * 0.4 + (self.height() * 0.2 - analyzeMethodRadioButton.height()) * 0.2 * (index + 1)))
 
         for index, testButton in enumerate(self.testButtons):
 
@@ -233,7 +235,7 @@ class TitleScene(QGraphicsScene):
             testButton.setMaximumHeight(testButtonHeight)
             testButton.setGeometry(0, 0, testButtonWidth, testButtonHeight)
 
-            testButton.move(int(self.width() * 0.15 + (self.width() * 0.7 - testButton.width()) * 0.25 * (index + 1)), int((self.height() - testButton.height()) * 0.7))
+            testButton.move(int(self.width() * 0.15 + (self.width() * 0.7 - testButton.width()) * 0.25 * (index + 1)), int((self.height() - testButton.height()) * 0.75))
 
         self.toolInfoLabel.setFont(QFont(DEFAULT_FONT_NAME, int(unitRatio * 0.2)))
         self.toolInfoLabel.setPos((self.width() - self.toolInfoLabel.boundingRect().width()) * 0.5, (self.height() - self.toolInfoLabel.boundingRect().height()) * 0.85)
@@ -251,7 +253,7 @@ class TitleScene(QGraphicsScene):
         self.makeFigCheckBox.setMaximumHeight(makeFigCheckBoxHeight)
         self.makeFigCheckBox.setGeometry(0, 0, makeFigCheckBoxWidth, makeFigCheckBoxHeight)
 
-        self.makeFigCheckBox.move(int((self.width() - self.makeFigCheckBox.width()) * 0.5), int((self.height() - self.makeFigCheckBox.height()) * 0.5))
+        self.makeFigCheckBox.move(int((self.width() - self.makeFigCheckBox.width()) * 0.5), int((self.height() - self.makeFigCheckBox.height()) * 0.6))
 
         randomQsCheckBoxFontSize = int(unitRatio * 0.2)
         self.randomQsCheckBox.setFont(QFont(DEFAULT_FONT_NAME, randomQsCheckBoxFontSize))
@@ -263,7 +265,7 @@ class TitleScene(QGraphicsScene):
         self.randomQsCheckBox.setMaximumHeight(randomQsCheckBoxHeight)
         self.randomQsCheckBox.setGeometry(0, 0, randomQsCheckBoxWidth, randomQsCheckBoxHeight)
 
-        self.randomQsCheckBox.move(int((self.width() - self.randomQsCheckBox.width()) * 0.5), int((self.height() - self.randomQsCheckBox.height()) * 0.55))
+        self.randomQsCheckBox.move(int((self.width() - self.randomQsCheckBox.width()) * 0.5), int((self.height() - self.randomQsCheckBox.height()) * 0.65))
 
 
     def onClickedAnalyzeingMethodRadioButton(self):
@@ -289,9 +291,9 @@ class TitleScene(QGraphicsScene):
     def randomQsCheckBoxChangedAction(self, state):
 
         if (Qt.Checked == state):
-            self.parent().reads = fys.fisher_yates_shuffle_improved(copy.copy(READS))
+            self.parent().read_indexs = fys.fisher_yates_shuffle_improved(copy.copy(SHUFFLE_INDEXS))
         else:
-            self.parent().reads = READS
+            self.parent().read_indexs = SHUFFLE_INDEXS
 
 
 class RecordingThread(QThread):
@@ -331,7 +333,7 @@ class TestScene(QGraphicsScene):
         self.recordThread = RecordingThread()
         self.recordThread.recordSignal.connect(self.thread)
 
-        self.reads = []
+        self.read_indexs = []
         self.showWordIndex = 0
 
     def setLogDir(self, logDir):
@@ -519,17 +521,17 @@ class TestScene(QGraphicsScene):
             for i in range(len(WORDS)):
                 for j in range(len(WORDS[i])):
 
-                    if self.reads[self.showWordIndex] == WORDS[i][j] and not k in EXCEPTION:
+                    if READS[self.read_indexs[self.showWordIndex]] == WORDS[i][j] and not k in EXCEPTION:
 
                         self.wordItems[k].show()
                         self.showCount = k
 
-                        self.wavPath = "%s/wavs/test1_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, self.reads[self.showWordIndex])
+                        self.wavPath = "%s/wavs/test1_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, READS[self.read_indexs[self.showWordIndex]])
                         self.recTime = 3.5
 
-                        self.boxItem.setPos(self.wordItems[BOX_POSITIONS[self.showWordIndex]].x() - ((self.boxItem.rect.width() - self.wordItems[BOX_POSITIONS[self.showWordIndex]].width()) * 0.5), self.wordItems[BOX_POSITIONS[self.showWordIndex]].y() - ((self.boxItem.rect.height() - self.wordItems[BOX_POSITIONS[self.showWordIndex]].height()) * 0.5))
-                        self.ellipseItem.setPos(self.wordItems[ELLIPSE_POSITIONS[self.showWordIndex]].x() - ((self.ellipseItem.width() - self.wordItems[ELLIPSE_POSITIONS[self.showWordIndex]].width()) * 0.5), self.wordItems[ELLIPSE_POSITIONS[self.showWordIndex]].y() - ((self.ellipseItem.height() - self.wordItems[ELLIPSE_POSITIONS[self.showWordIndex]].height()) * 0.5))
-                        self.starItem.setPos(self.wordItems[STAR_POSITIONS[self.showWordIndex]].x() - ((self.starItem.width() - self.wordItems[STAR_POSITIONS[self.showWordIndex]].width()) * 0.5), self.wordItems[STAR_POSITIONS[self.showWordIndex]].y() - ((self.starItem.height() - self.wordItems[STAR_POSITIONS[self.showWordIndex]].height()) * 0.5))
+                        self.boxItem.setPos(self.wordItems[BOX_POSITIONS[self.read_indexs[self.showWordIndex]]].x() - ((self.boxItem.rect.width() - self.wordItems[BOX_POSITIONS[self.read_indexs[self.showWordIndex]]].width()) * 0.5), self.wordItems[BOX_POSITIONS[self.read_indexs[self.showWordIndex]]].y() - ((self.boxItem.rect.height() - self.wordItems[BOX_POSITIONS[self.read_indexs[self.showWordIndex]]].height()) * 0.5))
+                        self.ellipseItem.setPos(self.wordItems[ELLIPSE_POSITIONS[self.read_indexs[self.showWordIndex]]].x() - ((self.ellipseItem.width() - self.wordItems[ELLIPSE_POSITIONS[self.read_indexs[self.showWordIndex]]].width()) * 0.5), self.wordItems[ELLIPSE_POSITIONS[self.read_indexs[self.showWordIndex]]].y() - ((self.ellipseItem.height() - self.wordItems[ELLIPSE_POSITIONS[self.read_indexs[self.showWordIndex]]].height()) * 0.5))
+                        self.starItem.setPos(self.wordItems[STAR_POSITIONS[self.read_indexs[self.showWordIndex]]].x() - ((self.starItem.width() - self.wordItems[STAR_POSITIONS[self.read_indexs[self.showWordIndex]]].width()) * 0.5), self.wordItems[STAR_POSITIONS[self.read_indexs[self.showWordIndex]]].y() - ((self.starItem.height() - self.wordItems[STAR_POSITIONS[self.read_indexs[self.showWordIndex]]].height()) * 0.5))
 
                         self.boxItem.color = Qt.black
                         self.ellipseItem.color = Qt.black
@@ -566,7 +568,7 @@ class TestScene(QGraphicsScene):
 
         if self.scheduleTimer > 210:
 
-            if self.showWordIndex >= len(self.reads):
+            if self.showWordIndex >= len(self.read_indexs):
                 self.process = "End"
                 self.changeProcess()
             else:
@@ -582,10 +584,10 @@ class TestScene(QGraphicsScene):
             for i in range(len(WORDS)):
                 for j in range(len(WORDS[i])):
 
-                    if self.reads[self.showWordIndex] == WORDS[i][j] and not k in EXCEPTION:
+                    if READS[self.read_indexs[self.showWordIndex]] == WORDS[i][j] and not k in EXCEPTION:
 
                         self.showCount = k
-                        self.wavPath = "%s/wavs/test2_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, self.reads[self.showWordIndex])
+                        self.wavPath = "%s/wavs/test2_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, READS[self.read_indexs[self.showWordIndex]])
                         self.recTime = 5.0
 
                     k += 1
@@ -608,7 +610,7 @@ class TestScene(QGraphicsScene):
 
         if self.scheduleTimer > 300:
 
-            if self.showWordIndex >= len(self.reads):
+            if self.showWordIndex >= len(self.read_indexs):
                 self.process = "End"
                 self.changeProcess()
             else:
@@ -624,12 +626,12 @@ class TestScene(QGraphicsScene):
             for i in range(len(WORDS)):
                 for j in range(len(WORDS[i])):
 
-                    if self.reads[self.showWordIndex] == WORDS[i][j] and not k in EXCEPTION:
+                    if READS[self.read_indexs[self.showWordIndex]] == WORDS[i][j] and not k in EXCEPTION:
 
                         self.wordItems[k].show()
                         self.showCount = k
 
-                        self.wavPath = "%s/wavs/test3_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, self.reads[self.showWordIndex])
+                        self.wavPath = "%s/wavs/test3_%s_%s.wav" % (self.logDir, "%02d" % self.showWordIndex, READS[self.read_indexs[self.showWordIndex]])
                         self.recTime = 3.5
 
                     k += 1
@@ -645,7 +647,7 @@ class TestScene(QGraphicsScene):
 
         if self.scheduleTimer > 210:
 
-            if self.showWordIndex >= len(self.reads):
+            if self.showWordIndex >= len(self.read_indexs):
                 self.process = "End"
                 self.changeProcess()
             else:
@@ -666,8 +668,8 @@ class ResultScene(QGraphicsScene):
         super().__init__(parent)
 
         self.name = "ResultScene"
-        self.reads = []
 
+        self.read_indexs = []
         self.titleLabel = QGraphicsSimpleTextItem()
         self.titleLabel.setText("Now Analyzing ...")
         self.titleLabel.setPen(QPen(Qt.black, 1))
@@ -733,7 +735,7 @@ class AnalyzeThread(QThread):
             shutil.copy(dataPath, distinationPath)
 
         progressCount = 0
-        progressDeff = int(PROGRESS_LIMIT / (len(self.parent().reads) + 1))
+        progressDeff = int(PROGRESS_LIMIT / (len(self.parent().read_indexs) + 1))
 
         wavDirPath = "%s/wavs" % self.logDir
         if os.path.isdir(wavDirPath):
@@ -788,7 +790,11 @@ class AnalyzeThread(QThread):
                     progressCount += progressDeff
                     self.countChanged.emit(progressCount)
 
-            excel.over_write_list_1d(filePath=distinationPath, sheetName="VAD", l_1d=self.parent().reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
+            reads = []
+            for index in self.parent().read_indexs:
+                reads.append(READS[index])
+
+            excel.over_write_list_1d(filePath=distinationPath, sheetName="VAD", l_1d=reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
             excel.over_write_list_2d(filePath=distinationPath, sheetName="VAD", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
 
             progressCount = PROGRESS_LIMIT
@@ -806,7 +812,7 @@ class MainWindow(QMainWindow):
         self.userName = ""
         self.analyzeMethod = DEFAULT_ANALYZE_METHOD
         self.isMakeFig = DEFAULT_IS_MAKE_FIGURE
-        self.reads = []
+        self.read_indexs = []
 
         # ウインドウサイズを設定
         self.resize(WINDOW_SIZE[0], WINDOW_SIZE[1])
@@ -859,7 +865,7 @@ class MainWindow(QMainWindow):
             self.testScene = TestScene(parent=self)
             self.testScene.setPosAndSize(frameSize=self.geometry().size())
             self.testScene.mode = mode
-            self.testScene.reads = self.reads
+            self.testScene.read_indexs = self.read_indexs
             self.testScene.setLogDir(logDir=self.logDir)
             self.graphicView.setScene(self.testScene)
 
@@ -869,9 +875,9 @@ class MainWindow(QMainWindow):
         if mode == "Result":
 
             resultScene = ResultScene(parent=self)
-            resultScene.reads = self.reads
 
             resultScene.setPosAndSize(frameSize=self.geometry().size())
+            resultScene.read_indexs = self.read_indexs
             resultScene.setParam(logDir=self.logDir, analyzeMethod=self.analyzeMethod, isMakeFig=self.isMakeFig, mode=self.testScene.mode)
             self.graphicView.setScene(resultScene)
 

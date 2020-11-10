@@ -46,10 +46,10 @@ def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLeve
     smaMax = np.max(smas)
     threshold = smaMax * smaThresholdRate # 閾値
 
-    powersMax = np.max(powers)
-    noiseLevel = (powersMax - np.min(powers)) * np.mean(powers)
+    # 平均音量（db）
+    meanDb = 10 * np.log10(np.mean(powers))
 
-    if noiseLevel < minNoiseLevel:
+    if meanDb < minNoiseLevel:
 
         startTime = "Input Low"
         endTime = "Input Low"
@@ -74,7 +74,7 @@ def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLeve
 
         if not isSilent:
 
-            # plt.axhline(y=noiseLevel, xmin=0, xmax=1, color="gray", linewidth=2)
+            plt.axhline(y=meanDb, xmin=0, xmax=1, color="gray", linewidth=2)
             plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
             plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
             plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
