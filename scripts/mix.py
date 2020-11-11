@@ -7,6 +7,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import wave
 import gc
+import python_speech_features as psf
+from scipy import interpolate
+import scipy.ndimage
 
 
 def ReadWavFile(fileName):
@@ -25,7 +28,6 @@ def ReadWavFile(fileName):
     x = np.frombuffer(data, dtype="int16") / float((2 ^ 15))
     return x, framerate
 
-
 def simpleMovingAverage(datas, window):
 
     unit = np.ones(window) / window
@@ -33,15 +35,60 @@ def simpleMovingAverage(datas, window):
 
     return smas
 
+def getMfcc(sigs, rate):
+
+    mfccs = psf.mfcc(sigs, rate)
+    deltas = psf.delta(mfccs, 2)
+    mfccFeatures = np.c_[mfccs, deltas]
+
+    return mfccFeatures
+
+def getVadFluctuation(mfccPowers, deltaPowers, filterWidth=10):
+
+    mfccPowers[mfccPowers < 0] = 0
+    deltaPowers = np.abs(deltaPowers)
+
+    y = mfccPowers * deltaPowers
+    y = scipy.ndimage.gaussian_filter(y, filterWidth)
+
+    return y
 
 def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLevel=1.0):
 
     isSilent = False
 
     wavs, frameRate = ReadWavFile(fileName=fileName)
-    powers = wavs ** 2 # 信号のパワー
 
-    smas = simpleMovingAverage(datas=powers, window=smaWindowSize)
+    powers = wavs ** 2 # 信号のパワー
+    mfccs = getMfcc(wavs, frameRate)
+
+    dataLength = len(mfccs)
+    mfccPowers = mfccs[:, 0]
+    deltaPowers = mfccs[:, 13]
+
+    # Voice active detection
+    x_observed = np.arange(0, dataLength, 1)  # 時間軸
+    y_observed = getVadFluctuation(mfccPowers, deltaPowers)
+
+    x_latents = np.linspace(min(x_observed), max(x_observed), len(powers))
+
+    method = lambda x, y: interpolate.interp1d(x, y, kind="cubic")
+    fitted_curve = method(x_observed, y_observed)
+
+    # ここの負荷が重い
+    fitted_curves = []
+    for x_latent in x_latents:
+        fitted_curves.append(fitted_curve(x_latent).tolist())
+
+    vad = fitted_curves * powers
+
+    # plt.scatter(x_observed, y_observed, label="observed")
+    # plt.plot(x_latent, fitted_curve(x_latent), c="red", label="fitted")
+    # plt.grid()
+    # plt.legend()
+    # plt.savefig("./log/temp.png")
+
+    smas = simpleMovingAverage(datas=vad, window=smaWindowSize)
 
     smaMax = np.max(smas)
     threshold = smaMax * smaThresholdRate # 閾値
@@ -69,7 +116,7 @@ def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLeve
         times = np.linspace(0, powers.size / frameRate, num=powers.size)
 
         plt.figure(figsize=(12, 10))
-        plt.plot(times, powers, label="Power")
+        plt.plot(times, powers, label="MixPower")
         plt.plot(times, smas, "r", label="SMA")
 
         if not isSilent:

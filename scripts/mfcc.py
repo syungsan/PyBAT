@@ -32,7 +32,6 @@ def getMfcc(fileName):
     (rate, sig) = scipy.io.wavfile.read(fileName)
     mfcc = psf.mfcc(sig, rate)
     delta = psf.delta(mfcc, 2)
-    deltas = np.diff(mfcc, axis=0)
     # deltaDelta = psf.delta(delta, 2)
     # mfccFeature = np.c_[mfcc, delta, deltaDelta]
     mfccFeature = np.c_[mfcc, delta]
