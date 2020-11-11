@@ -70,25 +70,14 @@ def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLeve
     x_observed = np.arange(0, dataLength, 1)  # 時間軸
     y_observed = getVadFluctuation(mfccPowers, deltaPowers)
 
-    x_latents = np.linspace(min(x_observed), max(x_observed), len(powers))
-
     method = lambda x, y: interpolate.interp1d(x, y, kind="cubic")
     fitted_curve = method(x_observed, y_observed)
 
-    # ここの負荷が重い
-    fitted_curves = []
-    for x_latent in x_latents:
-        fitted_curves.append(fitted_curve(x_latent).tolist())
+    x_latents = np.linspace(min(x_observed), max(x_observed), len(powers))
+    fitted_curves = fitted_curve(x_latents).tolist()
 
-    vad = fitted_curves * powers
-
-    # plt.scatter(x_observed, y_observed, label="observed")
-    # plt.plot(x_latent, fitted_curve(x_latent), c="red", label="fitted")
-    # plt.grid()
-    # plt.legend()
-    # plt.savefig("./log/temp.png")
-
-    smas = simpleMovingAverage(datas=vad, window=smaWindowSize)
+    vads = fitted_curves * powers
+    smas = simpleMovingAverage(datas=vads, window=smaWindowSize)
 
     smaMax = np.max(smas)
     threshold = smaMax * smaThresholdRate # 閾値
@@ -113,15 +102,15 @@ def run(fileName, figName, smaThresholdRate=0.1, smaWindowSize=100, minNoiseLeve
 
     if figName != "":
 
-        times = np.linspace(0, powers.size / frameRate, num=powers.size)
+        times = np.linspace(0, vads.size / frameRate, num=vads.size)
 
         plt.figure(figsize=(12, 10))
-        plt.plot(times, powers, label="MixPower")
+        plt.plot(times, vads, label="MixPower")
         plt.plot(times, smas, "r", label="SMA")
 
         if not isSilent:
 
-            plt.axhline(y=meanDb, xmin=0, xmax=1, color="gray", linewidth=2)
+            # plt.axhline(y=meanDb, xmin=0, xmax=1, color="gray", linewidth=2)
             plt.axhline(y=threshold, xmin=0, xmax=1, color="pink", linewidth=2)
             plt.axvline(ymin=0, ymax=1, x=startTime, color="green", linewidth=2)
             plt.axvline(ymin=0, ymax=1, x=endTime, color="yellow", linewidth=2)
