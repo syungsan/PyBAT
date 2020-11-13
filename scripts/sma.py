@@ -98,6 +98,6 @@ if __name__ == "__main__":
     figName = sys.argv[2]
     thresholdRate = sys.argv[3]
 
-    startTime, endTime, interval = run(fileName=fileName, figName=figName, vadThreshold=thresholdRate)
+    startTime, endTime, interval = run(fileName=fileName, figName=figName, thresholdRate=thresholdRate)
 
     print("%f,%f,%f" % (startTime, endTime, interval))

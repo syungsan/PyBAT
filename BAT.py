@@ -771,7 +771,7 @@ class AnalyzeThread(QThread):
                         else:
                             figName = ""
 
-                        startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, window=SMA_WINDOW_SIZE, vadThreshold=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
+                        startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, windowSize=SMA_WINDOW_SIZE, thresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
                         excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "Mix":
