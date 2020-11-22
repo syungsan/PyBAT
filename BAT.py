@@ -762,7 +762,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = mfcc.run(fileName=wavPath, figName=figName, vadThreshold=MFCC_THRESHOLD)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "SMA":
 
@@ -772,7 +772,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, windowSize=SMA_WINDOW_SIZE, thresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "Mix":
 
@@ -782,7 +782,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = mix.run(fileName=wavPath, figName=figName, smaWindowSize=SMA_WINDOW_SIZE, smaThresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="Mix", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="Mix", cell=analyzeMethodCell[self.mode.lower()])
 
                     datas = [startTime, endTime, interval]
                     testDatas[self.mode.lower()].append(datas)
@@ -794,8 +794,8 @@ class AnalyzeThread(QThread):
             for index in self.parent().read_indexs:
                 reads.append(READS[index])
 
-            excel.over_write_list_1d(filePath=distinationPath, sheetName="VAD", l_1d=reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
-            excel.over_write_list_2d(filePath=distinationPath, sheetName="VAD", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
+            excel.over_write_list_1d(filePath=distinationPath, sheetName="Simple Tabulation", l_1d=reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
+            excel.over_write_list_2d(filePath=distinationPath, sheetName="Simple Tabulation", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
 
             progressCount = PROGRESS_LIMIT
             self.countChanged.emit(progressCount)
