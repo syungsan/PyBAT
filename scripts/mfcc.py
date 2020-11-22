@@ -158,10 +158,6 @@ def run(fileName, figName, vadThreshold):
         if vadSection[i] == 1:
             calcIntervals.append(i)
 
-    # startTime = 0.0
-    # endTime = 0.0
-    # interval = 0.0
-
     if len(calcIntervals) > 0:
 
         startTime = calcIntervals[0] / 100.0
