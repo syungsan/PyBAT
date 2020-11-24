@@ -3,9 +3,8 @@
 
 # Mac
 # https://qiita.com/survivor7777777/items/5a8e23d30822437ae9f9
-# env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.8.5
+# env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.7.9
 # ./venv/bin/python -m pip install matplotlib==3.2.2
-# rm -rf dist/ build/
 
 # Backup & Restore pip
 # ./venv/bin/python -m pip freeze > requirements.txt
