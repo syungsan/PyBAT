@@ -3,9 +3,8 @@
 
 # Mac
 # https://qiita.com/survivor7777777/items/5a8e23d30822437ae9f9
-# env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.8.5
+# env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.7.9
 # ./venv/bin/python -m pip install matplotlib==3.2.2
-# rm -rf dist/ build/
 
 # Backup & Restore pip
 # ./venv/bin/python -m pip freeze > requirements.txt
@@ -51,10 +50,10 @@ WORDS = [["い", "は", "も", "へ", "こ", "や", "う"],
          ["そ", "ち", "ふ", "ち", "す", "ろ", "ね"],
          ["の", "よ", "ま", "あ", "ゆ", "き", "れ"]]
 
-READS = ["か", "は", "き", "せ", "つ"] # , "と", "こ", "ふ",
-         # "け", "し", "ら", "れ", "え", "そ", "お", "よ",
-         # "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
-         # "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
+READS = ["か", "は", "き", "せ", "つ", "と", "こ", "ふ",
+         "け", "し", "ら", "れ", "え", "そ", "お", "よ",
+         "ね", "ゆ", "ひ", "む", "さ", "や", "も", "み",
+         "ち", "う", "す", "の", "ま", "て", "ろ", "い"]
 
 EXCEPTION = [3, 10, 16, 17, 18, 23, 24, 25, 31, 38]
 
@@ -762,7 +761,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = mfcc.run(fileName=wavPath, figName=figName, vadThreshold=MFCC_THRESHOLD)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="MFCC", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "SMA":
 
@@ -772,7 +771,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = sma.run(fileName=wavPath, figName=figName, windowSize=SMA_WINDOW_SIZE, thresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="SMA", cell=analyzeMethodCell[self.mode.lower()])
 
                     if self.analyzeMethod == "Mix":
 
@@ -782,7 +781,7 @@ class AnalyzeThread(QThread):
                             figName = ""
 
                         startTime, endTime, interval = mix.run(fileName=wavPath, figName=figName, smaWindowSize=SMA_WINDOW_SIZE, smaThresholdRate=SMA_THRESHOLD_RATE, minNoiseLevel=MIN_NOISE_LEVEL)
-                        excel.over_write_one_value(filePath=distinationPath, sheetName="VAD", value="Mix", cell=analyzeMethodCell[self.mode.lower()])
+                        excel.over_write_one_value(filePath=distinationPath, sheetName="Simple Tabulation", value="Mix", cell=analyzeMethodCell[self.mode.lower()])
 
                     datas = [startTime, endTime, interval]
                     testDatas[self.mode.lower()].append(datas)
@@ -794,8 +793,8 @@ class AnalyzeThread(QThread):
             for index in self.parent().read_indexs:
                 reads.append(READS[index])
 
-            excel.over_write_list_1d(filePath=distinationPath, sheetName="VAD", l_1d=reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
-            excel.over_write_list_2d(filePath=distinationPath, sheetName="VAD", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
+            excel.over_write_list_1d(filePath=distinationPath, sheetName="Simple Tabulation", l_1d=reads, start_row=readsPosition[self.mode.lower()][0], start_col=readsPosition[self.mode.lower()][1])
+            excel.over_write_list_2d(filePath=distinationPath, sheetName="Simple Tabulation", l_2d=testDatas[self.mode.lower()], start_row=cellRecordPosition[self.mode.lower()][0], start_col=cellRecordPosition[self.mode.lower()][1])
 
             progressCount = PROGRESS_LIMIT
             self.countChanged.emit(progressCount)
